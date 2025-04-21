@@ -1,6 +1,7 @@
-console.log('🌍 API 주소:', process.env.REACT_APP_API_BASE_URL);
 import React from "react";
 import SearchResult from "./components/SearchResult";
+
+console.log('🌍 API 주소:', process.env.REACT_APP_API_BASE_URL);
 
 function App() {
   return (

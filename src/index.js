@@ -1,9 +1,10 @@
-console.log('🌍 API 주소:', process.env.REACT_APP_API_BASE_URL);
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 import reportWebVitals from './reportWebVitals';
+
+console.log('🌍 API 주소:', process.env.REACT_APP_API_BASE_URL);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
