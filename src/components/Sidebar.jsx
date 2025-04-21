@@ -10,9 +10,11 @@ const Sidebar = ({ onSearchClick, onShowInventory, onShowStatusChange, refreshTr
   const [showInModal, setShowInModal] = useState(false);
   const { admin } = useAdmin();
 
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 추가
+
   const fetchInventory = useCallback(() => {
     setLoading(true);
-    fetch('http://localhost:5001/api/search/all')
+    fetch(`${BASE_URL}/api/search/all`) // ✅ 수정
       .then((res) => res.json())
       .then((data) => {
         setInventory(data);
@@ -23,7 +25,7 @@ const Sidebar = ({ onSearchClick, onShowInventory, onShowStatusChange, refreshTr
         setError('재고 정보를 불러오는 데 실패했습니다. (' + err.message + ')');
         setLoading(false);
       });
-  }, []);
+  }, [BASE_URL]); // ✅ BASE_URL 의존성 추가
 
   useEffect(() => {
     fetchInventory();

@@ -1,4 +1,3 @@
-// src/components/AdminLoginModal.jsx
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
 
@@ -8,12 +7,15 @@ const AdminLoginModal = ({ onClose }) => {
   const [error, setError] = useState('');
   const { login } = useAdmin();
 
+  // ✅ 환경 변수로 API 주소 가져오기
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
   
     try {
-      const res = await fetch('http://localhost:5001/api/admin/login', {
+      const res = await fetch(`${BASE_URL}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

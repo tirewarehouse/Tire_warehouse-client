@@ -4,11 +4,12 @@ import SearchResult from '../components/SearchResult';
 
 const SearchPage = () => {
   const [results, setResults] = useState([]);
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 환경 변수로 설정
 
   const handleSearch = async (query) => {
-    console.log('🔍 사용자가 입력한 검색어:', query); // ✅ 여기에 추가
+    console.log('🔍 사용자가 입력한 검색어:', query);
     try {
-      const response = await fetch(`http://localhost:5001/api/search?keyword=${query}`);
+      const response = await fetch(`${BASE_URL}/api/search?keyword=${query}`); // ✅ 수정
       const data = await response.json();
       setResults(data);
     } catch (error) {

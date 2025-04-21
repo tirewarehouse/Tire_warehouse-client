@@ -1,4 +1,3 @@
-// ✅ StockStatusPage.jsx
 import React, { useEffect, useState } from 'react';
 
 const StockStatusPage = ({ onInventoryUpdate }) => {
@@ -6,8 +5,10 @@ const StockStatusPage = ({ onInventoryUpdate }) => {
   const [editedData, setEditedData] = useState([]);
   const [typeOptions, setTypeOptions] = useState([]);
 
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 추가
+
   useEffect(() => {
-    fetch('http://localhost:5001/api/search/all')
+    fetch(`${BASE_URL}/api/search/all`) // ✅ 수정
       .then((res) => res.json())
       .then((resData) => {
         setData(resData);
@@ -24,11 +25,11 @@ const StockStatusPage = ({ onInventoryUpdate }) => {
       })
       .catch((err) => console.error('❌ 상태 변경용 데이터 불러오기 실패:', err));
 
-    fetch('http://localhost:5001/api/options/types')
+    fetch(`${BASE_URL}/api/options/types`) // ✅ 수정
       .then((res) => res.json())
       .then((data) => setTypeOptions(data))
       .catch((err) => console.error('❌ 타입 옵션 불러오기 실패:', err));
-  }, []);
+  }, [BASE_URL]);
 
   const handleChange = (index, field, value) => {
     const newData = [...editedData];
@@ -52,7 +53,7 @@ const StockStatusPage = ({ onInventoryUpdate }) => {
     const { carNumber, dateIn, dateOut, quantity, type, memo } = editedData[index];
 
     try {
-      const res = await fetch(`http://localhost:5001/api/admin/update-stock`, {
+      const res = await fetch(`${BASE_URL}/api/admin/update-stock`, { // ✅ 수정
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ carNumber, dateIn, dateOut, quantity, type, memo }),
@@ -71,7 +72,7 @@ const StockStatusPage = ({ onInventoryUpdate }) => {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`http://localhost:5001/api/admin/delete-stock?carNumber=${carNumber}`, {
+      const res = await fetch(`${BASE_URL}/api/admin/delete-stock?carNumber=${carNumber}`, { // ✅ 수정
         method: 'DELETE',
       });
 

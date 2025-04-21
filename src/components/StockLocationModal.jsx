@@ -7,11 +7,13 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
   );
   const [showWarningModal, setShowWarningModal] = useState(false);
 
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 추가
+
   const handleChange = (index, field, value) => {
     const newLocations = [...locations];
     newLocations[index][field] = value;
 
-    // 중복 좌표 체크 (같은 자리 중복 입력 방지)
+    // 중복 좌표 체크
     const duplicates = newLocations.some((loc, i) => {
       if (i === index) return false;
       return loc.x === newLocations[index].x && loc.y === newLocations[index].y && loc.z === newLocations[index].z;
@@ -25,7 +27,7 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
     if (locations.some((loc) => !loc.x || !loc.y || !loc.z)) return;
     try {
       for (const loc of locations) {
-        const res = await fetch(`http://localhost:5001/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}`);
+        const res = await fetch(`${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}`); // ✅ 수정
         const data = await res.json();
         if (data.exists) {
           setShowWarningModal(true);
@@ -100,7 +102,7 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
                   )}
                 </div>
               </td>
-              <td className="border p-2">{stockInfo.dateOut || '출고 안 됨'}</td>
+              <td className="border p-2">{stockInfo.dateOut || '미정'}</td>
               <td className="border p-2">{stockInfo.memo || ''}</td>
             </tr>
           </tbody>

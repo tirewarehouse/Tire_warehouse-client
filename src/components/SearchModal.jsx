@@ -1,4 +1,3 @@
-// ✅ SearchModal.jsx
 import React, { useState } from 'react';
 import SearchBar from './SearchBar';
 import SearchResult from './SearchResult';
@@ -6,10 +5,13 @@ import SearchResult from './SearchResult';
 const SearchModal = ({ onClose }) => {
   const [results, setResults] = useState([]);
 
+  // ✅ 환경변수로 API 주소 가져오기
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
   const handleSearch = async (query) => {
     console.log('🔍 모달에서 입력한 검색어:', query);
     try {
-      const response = await fetch(`http://localhost:5001/api/search?keyword=${query}`);
+      const response = await fetch(`${BASE_URL}/api/search?keyword=${query}`);
       const data = await response.json();
       setResults(data);
     } catch (error) {

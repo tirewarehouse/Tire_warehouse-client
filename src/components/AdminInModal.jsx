@@ -18,14 +18,17 @@ const AdminInModal = ({ onClose }) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [confirmedPayload, setConfirmedPayload] = useState(null);
 
+  // ✅ 환경 변수로 API 주소 가져오기
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
   useEffect(() => {
-    fetch('http://localhost:5001/api/options/companies')
+    fetch(`${BASE_URL}/api/options/companies`)
       .then((res) => res.json())
       .then(setCompanies);
-    fetch('http://localhost:5001/api/options/types')
+    fetch(`${BASE_URL}/api/options/types`)
       .then((res) => res.json())
       .then(setTypes);
-  }, []);
+  }, [BASE_URL]);
 
   const validateCarNumber = (value) => {
     const cleaned = value.replace(/\s/g, '');
@@ -42,7 +45,7 @@ const AdminInModal = ({ onClose }) => {
     } else {
       setCarNumberError('');
       try {
-        const res = await fetch(`http://localhost:5001/api/admin/check-car?carNumber=${cleaned}`);
+        const res = await fetch(`${BASE_URL}/api/admin/check-car?carNumber=${cleaned}`);
         const data = await res.json();
         if (data.exists) {
           setCarExistsError('이미 등록된 차량입니다. 타이어 추가를 원하시면 재고 상태 변경을 해주세요.');
@@ -52,17 +55,6 @@ const AdminInModal = ({ onClose }) => {
       } catch (err) {
         console.error('차량 중복 확인 실패:', err);
       }
-    }
-  };
-
-  const handleQuantityChange = (value) => {
-    const num = Number(value);
-    setQuantity(num);
-
-    if (num !== 2 && num !== 4) {
-      setQuantityWarning('ℹ 보통 타이어는 2개 또는 4개씩 입고합니다. 입력하신 수량이 맞는지 다시 확인해 주세요.');
-    } else {
-      setQuantityWarning('');
     }
   };
 
@@ -104,7 +96,7 @@ const AdminInModal = ({ onClose }) => {
       locations
     };
 
-    fetch('http://localhost:5001/api/admin/in', {
+    fetch(`${BASE_URL}/api/admin/in`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(finalPayload),
