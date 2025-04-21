@@ -27,6 +27,8 @@ const Sidebar = ({ onSearchClick, onShowInventory, onShowStatusChange, refreshTr
       });
   }, [BASE_URL]); // ✅ BASE_URL 의존성 추가
 
+  console.log('🌍 API 주소:', process.env.REACT_APP_API_BASE_URL);
+  
   useEffect(() => {
     fetchInventory();
   }, [fetchInventory, refreshTrigger]);
