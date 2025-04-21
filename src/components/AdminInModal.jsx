@@ -58,6 +58,17 @@ const AdminInModal = ({ onClose }) => {
     }
   };
 
+  const handleQuantityChange = (value) => {
+    const num = Number(value);
+    setQuantity(num);
+  
+    if (num !== 2 && num !== 4) {
+      setQuantityWarning('ℹ 입력한 갯수가 맞는지 확인해주세요. 진행은 가능합니다.');
+    } else {
+      setQuantityWarning('');
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
