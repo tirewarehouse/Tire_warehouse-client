@@ -67,8 +67,8 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
               <td className="border p-2">{stockInfo.carNumber}</td>
               <td className="border p-2">{stockInfo.quantity}</td>
               <td className="border p-2">{stockInfo.type}</td>
-              <td className="border p-2">
-                <div className="flex flex-col items-center space-y-1">
+              <td className="border p-2 align-top">
+                <div className="flex flex-col items-center space-y-1 max-h-[250px] overflow-y-auto pr-1">
                   {locations.map((loc, i) => (
                     <div key={i} className="flex items-center border border-gray-400 text-xs">
                       <span className="px-1 border-r">X</span>

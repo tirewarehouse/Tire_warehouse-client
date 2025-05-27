@@ -1,20 +1,23 @@
-// src/components/Sidebar.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import AdminInModal from './AdminInModal';
+import SearchModal from './SearchModal';
+import CompanyManagementModal from './CompanyManagementModal'; // ✅ 추가
 
-const Sidebar = ({ onSearchClick, onShowInventory, onShowStatusChange, refreshTrigger }) => {
+const Sidebar = ({ onShowInventory, onShowStatusChange, refreshTrigger }) => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showInModal, setShowInModal] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showCompanyModal, setShowCompanyModal] = useState(false); // ✅ 추가
   const { admin } = useAdmin();
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 추가
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const fetchInventory = useCallback(() => {
     setLoading(true);
-    fetch(`${BASE_URL}/api/search/all`) // ✅ 수정
+    fetch(`${BASE_URL}/api/search/all`)
       .then((res) => res.json())
       .then((data) => {
         setInventory(data);
@@ -25,24 +28,22 @@ const Sidebar = ({ onSearchClick, onShowInventory, onShowStatusChange, refreshTr
         setError('재고 정보를 불러오는 데 실패했습니다. (' + err.message + ')');
         setLoading(false);
       });
-  }, [BASE_URL]); // ✅ BASE_URL 의존성 추가
+  }, [BASE_URL]);
 
-  console.log('🌍 API 주소:', process.env.REACT_APP_API_BASE_URL);
-  
   useEffect(() => {
     fetchInventory();
   }, [fetchInventory, refreshTrigger]);
 
   const handleModalClose = () => {
     setShowInModal(false);
-    fetchInventory(); // ✅ 입고 모달 닫을 때 최신 데이터 불러오기
+    fetchInventory();
   };
 
   return (
     <div className="w-60 h-screen bg-blue-200 p-4 flex flex-col gap-4">
       <button
         className="bg-blue-500 text-white px-4 py-2 rounded"
-        onClick={onSearchClick}
+        onClick={() => setShowSearchModal(true)}
       >
         검색
       </button>
@@ -69,10 +70,20 @@ const Sidebar = ({ onSearchClick, onShowInventory, onShowStatusChange, refreshTr
           >
             재고 상태 변경
           </button>
+
+          {/* ✅ 회사 관리 버튼 추가 */}
+          <button
+            onClick={() => setShowCompanyModal(true)}
+            className="bg-purple-400 text-white text-center px-4 py-2 rounded hover:bg-orange-500"
+          >
+            회사 관리
+          </button>
         </>
       )}
 
       {showInModal && <AdminInModal onClose={handleModalClose} />}
+      {showSearchModal && <SearchModal onClose={() => setShowSearchModal(false)} />}
+      {showCompanyModal && <CompanyManagementModal onClose={() => setShowCompanyModal(false)} />}
 
       <div className="bg-white p-2 rounded shadow text-sm">
         <div className="font-bold mb-1">재고 현황</div>

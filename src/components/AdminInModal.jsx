@@ -18,16 +18,24 @@ const AdminInModal = ({ onClose }) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [confirmedPayload, setConfirmedPayload] = useState(null);
 
-  // ✅ 환경 변수로 API 주소 가져오기
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+  // ✅ 회사 및 타이어 종류 최신 정보 불러오기
   useEffect(() => {
-    fetch(`${BASE_URL}/api/options/companies`)
-      .then((res) => res.json())
-      .then(setCompanies);
-    fetch(`${BASE_URL}/api/options/types`)
-      .then((res) => res.json())
-      .then(setTypes);
+    const fetchOptions = async () => {
+      try {
+        const resCompanies = await fetch(`${BASE_URL}/api/options/companies`);
+        const resTypes = await fetch(`${BASE_URL}/api/options/types`);
+        const companiesData = await resCompanies.json();
+        const typesData = await resTypes.json();
+        setCompanies(companiesData);
+        setTypes(typesData);
+      } catch (err) {
+        console.error('옵션 불러오기 실패:', err);
+      }
+    };
+
+    fetchOptions();
   }, [BASE_URL]);
 
   const validateCarNumber = (value) => {
@@ -47,11 +55,7 @@ const AdminInModal = ({ onClose }) => {
       try {
         const res = await fetch(`${BASE_URL}/api/admin/check-car?carNumber=${cleaned}`);
         const data = await res.json();
-        if (data.exists) {
-          setCarExistsError('이미 등록된 차량입니다. 타이어 추가를 원하시면 재고 상태 변경을 해주세요.');
-        } else {
-          setCarExistsError('');
-        }
+        setCarExistsError(data.exists ? '이미 등록된 차량입니다.' : '');
       } catch (err) {
         console.error('차량 중복 확인 실패:', err);
       }
@@ -61,7 +65,7 @@ const AdminInModal = ({ onClose }) => {
   const handleQuantityChange = (value) => {
     const num = Number(value);
     setQuantity(num);
-  
+
     if (num !== 2 && num !== 4) {
       setQuantityWarning('ℹ 입력한 갯수가 맞는지 확인해주세요. 진행은 가능합니다.');
     } else {
@@ -144,9 +148,13 @@ const AdminInModal = ({ onClose }) => {
             className="border p-2 w-full rounded"
           >
             <option value="">회사 선택</option>
-            {companies.map((c) => (
-              <option key={c._id} value={c.name}>{c.name}</option>
-            ))}
+            {companies.length === 0 ? (
+              <option disabled>회사 데이터 없음</option>
+            ) : (
+              companies.map((c) => (
+                <option key={c._id} value={c.name}>{c.name}</option>
+              ))
+            )}
           </select>
 
           <select

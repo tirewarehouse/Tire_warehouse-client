@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import SearchPopup from './components/SearchPopup';
+import SearchModal from './components/SearchModal'; // ✅ 모달로 변경
 import InventoryList from './components/InventoryList';
 import AdminLoginButton from './components/AdminLoginButton';
 import { AdminProvider, useAdmin } from './context/AdminContext';
@@ -10,14 +10,12 @@ import StockStatusPage from './components/StockStatusPage';
 
 function AppLayout() {
   const location = useLocation();
-  const isPopup = location.pathname === '/search-popup';
 
   return (
     <>
-      {!isPopup && <AdminLoginButton />}
+      <AdminLoginButton />
       <Routes>
         <Route path="/" element={<MainPage />} />
-        <Route path="/search-popup" element={<SearchPopup />} />
       </Routes>
     </>
   );
@@ -27,21 +25,18 @@ function MainPage() {
   const [showInventory, setShowInventory] = useState(false);
   const [showStatusChange, setShowStatusChange] = useState(false);
   const [showAdminInModal, setShowAdminInModal] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // ✅ 재고 새로고침 트리거
+  const [showSearchModal, setShowSearchModal] = useState(false); // ✅ 검색 모달 상태
+  const [refreshKey, setRefreshKey] = useState(0);
   const { isLoggedIn } = useAdmin();
 
-  const triggerRefresh = () => setRefreshKey(prev => prev + 1); // ✅ 상태 변경용 함수
+  const triggerRefresh = () => setRefreshKey(prev => prev + 1);
 
   return (
     <div className="flex">
       <Sidebar
-        refreshTrigger={refreshKey} // ✅ 전달
+        refreshTrigger={refreshKey}
         onSearchClick={() => {
-          window.open(
-            '/search-popup',
-            'searchPopup',
-            'width=500,height=400'
-          );
+          setShowSearchModal(true); // ✅ 팝업 대신 모달 열기
         }}
         onShowInventory={() => {
           setShowInventory(true);
@@ -68,8 +63,12 @@ function MainPage() {
         {showAdminInModal && (
           <AdminInModal
             onClose={() => setShowAdminInModal(false)}
-            onInventoryUpdate={triggerRefresh} // ✅ 입고 후 새로고침
+            onInventoryUpdate={triggerRefresh}
           />
+        )}
+
+        {showSearchModal && (
+          <SearchModal onClose={() => setShowSearchModal(false)} />
         )}
 
         {showInventory ? (
@@ -94,7 +93,7 @@ function MainPage() {
                 ❌ 닫기
               </button>
             </div>
-            <StockStatusPage onInventoryUpdate={triggerRefresh} /> {/* ✅ 삭제/수정 반영 */}
+            <StockStatusPage onInventoryUpdate={triggerRefresh} />
           </div>
         ) : (
           <p className="text-gray-500">왼쪽 버튼을 눌러 재고 리스트나 상태 변경을 확인하세요.</p>

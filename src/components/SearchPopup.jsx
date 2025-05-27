@@ -5,33 +5,24 @@ const SearchPopup = () => {
   const [results, setResults] = useState([]);
   const [error, setError] = useState('');
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 환경변수 사용
-
-  const isValidCarNumber = (value) => {
-    const cleaned = value.replace(/\s/g, '');
-    return /^[0-9]{2}[가-힣]{1}[0-9]{4}$/.test(cleaned);
-  };
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const handleChange = (e) => {
-    const value = e.target.value;
-    setInput(value);
-
-    const cleaned = value.replace(/\s/g, '');
-    if (!isValidCarNumber(cleaned)) {
-      setError('🚫 차량번호 형식이 아닙니다. 예: 12가1234');
-    } else {
-      setError('');
-    }
+    setInput(e.target.value);
+    setError('');
   };
 
   const handleSearch = async (e) => {
     e.preventDefault();
     const cleaned = input.replace(/\s/g, '');
 
-    if (!isValidCarNumber(cleaned)) return;
+    if (!cleaned) {
+      setError('검색어를 입력해주세요.');
+      return;
+    }
 
     try {
-      const response = await fetch(`${BASE_URL}/api/search?keyword=${cleaned}`); // ✅ 수정됨
+      const response = await fetch(`${BASE_URL}/api/search?keyword=${cleaned}`);
       const data = await response.json();
       setResults(data);
     } catch (error) {
@@ -48,15 +39,15 @@ const SearchPopup = () => {
           type="text"
           value={input}
           onChange={handleChange}
-          placeholder="차량번호 입력 (예: 12가1234)"
+          placeholder="차량번호 일부를 입력하세요 (예: 12가, 1234)"
           className="border px-3 py-2 rounded"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <button
           type="submit"
-          disabled={!!error}
-          className={`px-4 py-2 rounded text-white ${error ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+          disabled={!input.trim()}
+          className={`px-4 py-2 rounded text-white ${!input.trim() ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
         >
           검색
         </button>
@@ -71,7 +62,7 @@ const SearchPopup = () => {
               <p><strong>타입:</strong> {item.type}</p>
               <p><strong>수량:</strong> {item.quantity}</p>
 
-              {item.locations && item.locations.length > 0 ? (
+              {item.locations?.length > 0 ? (
                 <div className="mt-2">
                   <p className="font-bold mb-1">위치:</p>
                   <div className="space-y-2">
