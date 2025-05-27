@@ -6,28 +6,39 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
     Array.from({ length: stockInfo.quantity }, () => ({ x: '', y: '', z: '', duplicate: false }))
   );
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const [overLimitWarning, setOverLimitWarning] = useState(false); // ✅ 추가
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 추가
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const handleChange = (index, field, value) => {
+    const numValue = Math.min(Number(value), 100); // ✅ 최대 100 제한
     const newLocations = [...locations];
-    newLocations[index][field] = value;
+    newLocations[index][field] = numValue;
 
     // 중복 좌표 체크
     const duplicates = newLocations.some((loc, i) => {
       if (i === index) return false;
-      return loc.x === newLocations[index].x && loc.y === newLocations[index].y && loc.z === newLocations[index].z;
+      return (
+        loc.x === newLocations[index].x &&
+        loc.y === newLocations[index].y &&
+        loc.z === newLocations[index].z
+      );
     });
 
     newLocations[index].duplicate = duplicates;
     setLocations(newLocations);
+
+    // ✅ 100 초과 경고 플래그
+    setOverLimitWarning(Number(value) > 100);
   };
 
   const handleSubmit = async () => {
     if (locations.some((loc) => !loc.x || !loc.y || !loc.z)) return;
     try {
       for (const loc of locations) {
-        const res = await fetch(`${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}`); // ✅ 수정
+        const res = await fetch(
+          `${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}`
+        );
         const data = await res.json();
         if (data.exists) {
           setShowWarningModal(true);
@@ -40,7 +51,9 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
     }
   };
 
-  const isSubmitDisabled = locations.some((loc) => !loc.x || !loc.y || !loc.z || loc.duplicate);
+  const isSubmitDisabled = locations.some(
+    (loc) => !loc.x || !loc.y || !loc.z || loc.duplicate
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
@@ -97,8 +110,15 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
                       />
                     </div>
                   ))}
-                  {locations.some(loc => loc.duplicate) && (
-                    <p className="text-xs text-red-500 mt-1">같은 자리를 중복해서 입력할 수 없습니다.</p>
+                  {locations.some((loc) => loc.duplicate) && (
+                    <p className="text-xs text-red-500 mt-1">
+                      같은 자리를 중복해서 입력할 수 없습니다.
+                    </p>
+                  )}
+                  {overLimitWarning && (
+                    <p className="text-xs text-red-500 mt-1">
+                      X, Y, Z 좌표는 100을 넘을 수 없습니다.
+                    </p>
                   )}
                 </div>
               </td>
@@ -116,18 +136,13 @@ const StockLocationModal = ({ stockInfo, onSubmit, onCancel }) => {
           >
             입고 완료
           </button>
-          <button
-            onClick={onCancel}
-            className="text-gray-500 hover:underline"
-          >
+          <button onClick={onCancel} className="text-gray-500 hover:underline">
             취소
           </button>
         </div>
       </div>
 
-      {showWarningModal && (
-        <LocationWarningModal onClose={() => setShowWarningModal(false)} />
-      )}
+      {showWarningModal && <LocationWarningModal onClose={() => setShowWarningModal(false)} />}
     </div>
   );
 };
