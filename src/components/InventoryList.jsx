@@ -34,7 +34,7 @@ const InventoryList = () => {
         <table className="w-full border text-sm text-center table-fixed">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border p-2">회사</th>
+              <th className="border p-2">회사2</th>
               <th className="border p-2">입고일</th>
               <th className="border p-2">차량번호</th>
               <th className="border p-2">수량</th>
