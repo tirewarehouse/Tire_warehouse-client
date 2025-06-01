@@ -49,7 +49,7 @@ function MainPage() {
       />
 
       <div className="flex-1 p-8">
-        <h1 className="text-xl font-bold mb-4">타이어 창고 관리 웹서비스2</h1>
+        <h1 className="text-xl font-bold mb-4">타이어 창고 관리 웹서비스22</h1>
 
         {isLoggedIn && (
           <button
