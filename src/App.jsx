@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import SearchModal from './components/SearchModal'; // ✅ 모달로 변경
 import InventoryList from './components/InventoryList';
@@ -9,8 +9,6 @@ import AdminInModal from './components/AdminInModal';
 import StockStatusPage from './components/StockStatusPage';
 
 function AppLayout() {
-  const location = useLocation();
-
   return (
     <>
       <AdminLoginButton />
@@ -49,7 +47,7 @@ function MainPage() {
       />
 
       <div className="flex-1 p-8">
-        <h1 className="text-xl font-bold mb-4">타이어 창고 관리 웹서비스22</h1>
+        <h1 className="text-xl font-bold mb-4">타이어 창고 관리 웹서비스</h1>
 
         {isLoggedIn && (
           <button
