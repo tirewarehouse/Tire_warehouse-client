@@ -139,8 +139,9 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   };
   const handleChangeLocation = (value, id, record, field) => {
     const newData = [...editedData];
-    newData.find((item) => item._id === record._id).locations.find((loc) => loc._id === id)[field] = value;
-
+    const itemToEdit = newData.find((item) => item._id === record._id);
+    const locationToEdit = itemToEdit.locations.find((loc) => loc._id === id);
+    locationToEdit[field] = value;
     setEditedData(newData);
   };
 
@@ -152,23 +153,22 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       original.dateOut?.slice(0, 10) !== edited.dateOut ||
       original.quantity !== Number(edited.quantity) ||
       original.memo !== edited.memo ||
-      original.type !== edited.type ||
-      original.locations !== edited.locations
+      original.type !== edited.type
     );
   };
 
   const handleSave = async (id) => {
-		const original = data.find((item) => item._id === id)
+    const original = data.find((item) => item._id === id);
     const { carNumber, dateIn, dateOut, quantity, type, memo, locations } = editedData.find((item) => item._id === id);
     if (locations.some((loc) => !loc.x || !loc.y || !loc.z)) return;
     try {
       for (const loc of locations) {
-				const originalLoc = original.locations.find((oriLoc) => oriLoc._id === loc._id)
-				console.log('🚀 ~ handleSave ~ originalLoc:', originalLoc)
-				if (originalLoc.x === loc.x && originalLoc.y === loc.y && originalLoc.z === loc.z) {
-					continue;
-				}
-        const res = await fetch(`${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}`);
+        const originalLoc = original.locations.find((oriLoc) => oriLoc._id === loc._id);
+        console.log('🚀 ~ handleSave ~ originalLoc:', originalLoc);
+        if (originalLoc.x === loc.x && originalLoc.y === loc.y && originalLoc.z === loc.z) {
+          continue;
+        }
+        const res = await fetch(`${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}&id=`);
         const data = await res.json();
         if (data.exists) {
           setShowWarningModal(true);

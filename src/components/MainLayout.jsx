@@ -13,13 +13,13 @@ const { Header, Content, Footer, Sider } = Layout;
 const App = () => {
   const { admin } = useAdmin();
   const items = [
-    { key: 1, icon: <SearchOutlined />, label: '검색', visible: true, onClick: () => setShowSearchModal(true) },
-    { key: 2, icon: <FileSearchOutlined />, label: '리스트 확인', visible: true, onClick: () => handleShowInventoriesView() },
-    { key: 3, icon: <PlusOutlined />, label: '재고 입고', visible: admin, onClick: () => setShowInModal(true) },
-    { key: 4, icon: <SyncOutlined />, label: '재고 상태 변경', visible: admin, onClick: () => handleShowInventoryStatusChangeView() },
-    { key: 5, icon: <ReconciliationOutlined />, label: '회사 관리', visible: admin, onClick: () => setShowCompanyModal(true) },
+    { key: 1, icon: <SearchOutlined />, label: '검색', visible_column: 'true', onClick: () => setShowSearchModal(true) },
+    { key: 2, icon: <FileSearchOutlined />, label: '리스트 확인', visible_column: 'true', onClick: () => handleShowInventoriesView() },
+    { key: 3, icon: <PlusOutlined />, label: '재고 입고', visible_column: admin ? 'true' : 'false', onClick: () => setShowInModal(true) },
+    { key: 4, icon: <SyncOutlined />, label: '재고 상태 변경', visible_column: admin ? 'true' : 'false', onClick: () => handleShowInventoryStatusChangeView() },
+    { key: 5, icon: <ReconciliationOutlined />, label: '회사 관리', visible_column: admin ? 'true' : 'false', onClick: () => setShowCompanyModal(true) },
   ];
-  const filterItems = items.filter((item) => item.visible);
+  const filterItems = items.filter((item) => item.visible_column === 'true');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showInventoriesView, setShowInventoriesView] = useState(false);
   const [showInModal, setShowInModal] = useState(false);
@@ -66,17 +66,7 @@ const App = () => {
   } = theme.useToken();
   return (
     <Layout style={{ height: '100vh', width: '100vw' }}>
-      <Sider
-        breakpoint="lg"
-        collapsedWidth="0"
-        onBreakpoint={(broken) => {
-          console.log('broken: ', broken);
-        }}
-        onCollapse={(collapsed, type) => {
-          console.log('collapsed: ', collapsed, 'type: ', type);
-        }}
-        style={{ background: '#bfdbfe' }}
-      >
+      <Sider breakpoint="lg" collapsedWidth="0" style={{ backgroundColor: "#bfdbfe" }}>
         <Menu mode="inline" items={filterItems} />
         {showSearchModal && <SearchModal onClose={() => setShowSearchModal(false)} />}
         {showInModal && <AdminInModal onClose={handleModalClose} />}
