@@ -1,14 +1,16 @@
-import { Button, Col, Input, InputNumber, Row, Select, Table } from 'antd';
 import { useEffect, useState } from 'react';
+import { Button, Col, Input, InputNumber, Row, Select, Table } from 'antd';
+import LocationWarningModal from './LocationWarningModal';
 
 const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   const [data, setData] = useState([]);
   const [editedData, setEditedData] = useState([]);
   const [typeOptions, setTypeOptions] = useState([]);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   const columns = [
-    { title: '차량번호', dataIndex: 'carNumber', key: 'carNumber' },
-    { title: '회사', dataIndex: 'company', key: 'company' },
+    { title: '차량번호', dataIndex: 'carNumber', key: 'carNumber', render: (_, record) => <Input value={record.carNumber} disabled style={{ width: '120px' }} /> },
+    { title: '회사', dataIndex: 'company', key: 'company', render: (_, record) => <Input value={record.company} disabled style={{ width: '120px' }} /> },
     {
       title: '입고일',
       dataIndex: 'dateIn',
@@ -19,7 +21,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       title: '수량',
       dataIndex: 'quantity',
       key: 'quantity',
-      render: (_, record) => <InputNumber value={record.quantity} onChange={(value) => handleChangeQuantity(value, record._id)} />,
+      render: (_, record) => <InputNumber value={record.quantity} min={1} onChange={(value) => handleChangeQuantity(value, record._id)} />,
     },
     {
       title: '타이어',
@@ -29,6 +31,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
         <Select
           className="text-xs border px-1 py-0.5 w-full"
           value={record.type}
+          disabled
           onChange={(value) => handleChangeType(value, record._id)}
           options={typeOptions.map((opt) => ({ label: opt.name, value: opt._id }))}
         ></Select>
@@ -38,12 +41,21 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       title: '위치',
       dataIndex: 'locations',
       key: 'locations',
-      render: (text) =>
-        text?.map((loc, i) => (
+      render: (_, record) =>
+        _?.map((loc, i) => (
           <Row key={`${loc.x}-${loc.y}-${loc.z}-${i}`}>
-            <Col span={8}>X: {loc.x}</Col>
-            <Col span={8}>Y: {loc.y}</Col>
-            <Col span={8}>Z: {loc.z}</Col>
+            <Col span={8}>
+              X:
+              <InputNumber value={loc.x} min={1} style={{ width: '50px' }} onChange={(value) => handleChangeLocation(value, loc._id, record, 'x')} />
+            </Col>
+            <Col span={8}>
+              Y:
+              <InputNumber value={loc.y} min={1} style={{ width: '50px' }} onChange={(value) => handleChangeLocation(value, loc._id, record, 'y')} />
+            </Col>
+            <Col span={8}>
+              Z:
+              <InputNumber value={loc.z} min={1} style={{ width: '50px' }} onChange={(value) => handleChangeLocation(value, loc._id, record, 'z')} />
+            </Col>
           </Row>
         )),
     },
@@ -105,16 +117,32 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     newData.find((item) => item._id === id)[field] = value;
     setEditedData(newData);
   };
-	const handleChangeQuantity = (value, id) => {
-		const newData = [...editedData];
-		newData.find((item) => item._id === id).quantity = value;
-		setEditedData(newData);
-	}
-	const handleChangeType = (value, id) => {
-		const newData = [...editedData];
-		newData.find((item) => item._id === id).type = value;
-		setEditedData(newData);
-	}
+  const handleChangeQuantity = (value, id) => {
+    const newData = [...editedData];
+    const item = newData.find((item) => item._id === id);
+    const beforeValue = item.quantity;
+    item.quantity = value;
+
+    if (beforeValue > value) {
+      item.locations.pop();
+    } else {
+      item.locations.push({ x: 1, y: 1, z: 1 });
+    }
+
+    setEditedData(newData);
+  };
+  const handleChangeType = (value, id) => {
+    const newData = [...editedData];
+    const typeOption = typeOptions.find((item) => item._id === value);
+    newData.find((item) => item._id === id).type = typeOption.name;
+    setEditedData(newData);
+  };
+  const handleChangeLocation = (value, id, record, field) => {
+    const newData = [...editedData];
+    newData.find((item) => item._id === record._id).locations.find((loc) => loc._id === id)[field] = value;
+
+    setEditedData(newData);
+  };
 
   const hasChanges = (id) => {
     const original = data.find((item) => item._id === id);
@@ -124,26 +152,45 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       original.dateOut?.slice(0, 10) !== edited.dateOut ||
       original.quantity !== Number(edited.quantity) ||
       original.memo !== edited.memo ||
-      original.type !== edited.type
+      original.type !== edited.type ||
+      original.locations !== edited.locations
     );
   };
 
   const handleSave = async (id) => {
-    const { carNumber, dateIn, dateOut, quantity, type, memo } = editedData.find((item) => item._id === id);
-
+		const original = data.find((item) => item._id === id)
+    const { carNumber, dateIn, dateOut, quantity, type, memo, locations } = editedData.find((item) => item._id === id);
+    if (locations.some((loc) => !loc.x || !loc.y || !loc.z)) return;
     try {
-      const res = await fetch(`${BASE_URL}/api/admin/update-stock`, {
-        // ✅ 수정
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ carNumber, dateIn, dateOut, quantity, type, memo }),
-      });
+      for (const loc of locations) {
+				const originalLoc = original.locations.find((oriLoc) => oriLoc._id === loc._id)
+				console.log('🚀 ~ handleSave ~ originalLoc:', originalLoc)
+				if (originalLoc.x === loc.x && originalLoc.y === loc.y && originalLoc.z === loc.z) {
+					continue;
+				}
+        const res = await fetch(`${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}`);
+        const data = await res.json();
+        if (data.exists) {
+          setShowWarningModal(true);
+          return;
+        }
+      }
+      try {
+        const res = await fetch(`${BASE_URL}/api/admin/update-stock`, {
+          // ✅ 수정
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ carNumber, dateIn, dateOut, quantity, type, memo, locations }),
+        });
 
-      const result = await res.json();
-      alert(result.message);
-      if (onInventoryUpdate) onInventoryUpdate();
+        const result = await res.json();
+        alert(result.message);
+        if (onInventoryUpdate) onInventoryUpdate();
+      } catch (err) {
+        alert('❌ 저장 실패');
+      }
     } catch (err) {
-      alert('❌ 저장 실패');
+      console.error(err);
     }
   };
 
@@ -172,6 +219,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     <div>
       <h2 className="text-2xl font-bold">📦 재고 상태 변경</h2>
       <Table align="center" columns={columns} dataSource={editedData} rowKey={(record) => record._id} />
+      {showWarningModal && <LocationWarningModal onClose={() => setShowWarningModal(false)} />}
     </div>
   );
 };

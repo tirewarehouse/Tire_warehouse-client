@@ -46,7 +46,7 @@ const InventoryList = () => {
   }, [BASE_URL]);
 
   return (
-    <div className="p-8">
+    <div>
 			<h2 className="text-2xl font-bold">재고 리스트 확인</h2>
       {error ? (
         <div className="bg-red-100 text-red-600 p-4 mb-4 rounded shadow">
