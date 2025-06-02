@@ -158,17 +158,16 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   };
 
   const handleSave = async (id) => {
-    const original = data.find((item) => item._id === id);
     const { carNumber, dateIn, dateOut, quantity, type, memo, locations } = editedData.find((item) => item._id === id);
+    const originData = await fetch(`${BASE_URL}/api/admin/get-detail?id=${id}`)
+      .then((res) => res.json())
+      .then((res) => res);
     if (locations.some((loc) => !loc.x || !loc.y || !loc.z)) return;
     try {
       for (const loc of locations) {
-        const originalLoc = original.locations.find((oriLoc) => oriLoc._id === loc._id);
-        console.log('🚀 ~ handleSave ~ originalLoc:', originalLoc);
-        if (originalLoc.x === loc.x && originalLoc.y === loc.y && originalLoc.z === loc.z) {
-          continue;
-        }
-        const res = await fetch(`${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}&id=`);
+        const location = originData.locations.find((item) => item._id === loc._id);
+        if (location.x === loc.x && location.y === loc.y && location.z === loc.z) continue;
+        const res = await fetch(`${BASE_URL}/api/admin/check-location?x=${loc.x}&y=${loc.y}&z=${loc.z}`);
         const data = await res.json();
         if (data.exists) {
           setShowWarningModal(true);
