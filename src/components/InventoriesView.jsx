@@ -20,7 +20,7 @@ const columns = [
 				</Row>
       )),
   },
-  { title: '출고일', dataIndex: 'dateOut', key: 'dateOut' },
+  { title: '출고일', dataIndex: 'dateOut', key: 'dateOut', render: (text) => text ? new Date(text).toLocaleDateString() : '' },
   { title: '메모', dataIndex: 'memo', key: 'memo' },
 ];
 
