@@ -45,7 +45,7 @@ const AdminLoginModal = ({ onClose }) => {
         <form onSubmit={handleSubmit} className="space-y-2">
           <input
             type="text"
-            placeholder="전화번호 형식 ID (예: 000-0000-0000)"
+            placeholder="이름"
             value={id}
             onChange={(e) => setId(e.target.value)}
             className="border p-2 w-full rounded"
