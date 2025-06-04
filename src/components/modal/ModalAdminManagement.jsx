@@ -17,8 +17,8 @@ const ModalAdminManagement = () => {
     });
   };
 
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   useEffect(() => {
-    const BASE_URL = process.env.REACT_APP_API_BASE_URL;
     const getMembers = async () => {
       if (!isModalOpen || !login) return;
       const res = await fetch(`${BASE_URL}/api/admin/get-admins`);
@@ -26,7 +26,7 @@ const ModalAdminManagement = () => {
       setMembers(data);
     };
     getMembers();
-  }, [isModalOpen, login]);
+  }, [isModalOpen, login, BASE_URL]);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -39,7 +39,6 @@ const ModalAdminManagement = () => {
   };
 
   const onDelete = async (name) => {
-    const BASE_URL = process.env.REACT_APP_API_BASE_URL;
     const res = await fetch(`${BASE_URL}/api/admin/delete-admin?name=${name}`, {
       method: "DELETE",
     });
@@ -53,12 +52,14 @@ const ModalAdminManagement = () => {
   };
 
   const columns = [
-    { title: "이름", dataIndex: "name", key: "name" },
-    { title: "휴대폰", dataIndex: "phone", key: "phone" },
+    { title: "이름", dataIndex: "name", key: "name", align: "center", width: "30%" },
+    { title: "휴대폰", dataIndex: "phone", key: "phone", align: "center", width: "40%" },
     {
       title: "",
       dataIndex: "button",
       key: "button",
+      align: "center",
+      width: "30%",
       render: (_, record) =>
         admin === "관리자" && (
           <Button size="small" color="red" variant="solid" onClick={() => onDelete(record.name)}>

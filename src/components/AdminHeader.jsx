@@ -1,11 +1,11 @@
-// src/components/AdminLoginButton.jsx
 import React, { useState } from "react";
 import { useAdmin } from "../context/AdminContext";
 import { Button } from "antd";
 import AdminLoginModal from "./AdminLoginModal";
 import ModalAdminManagement from "./modal/ModalAdminManagement";
+import ModalWarehouse from "./modal/ModalWarehouse";
 
-const AdminLoginButton = () => {
+const AdminHeader = () => {
   const { admin, logout } = useAdmin();
   const [showModal, setShowModal] = useState(false);
 
@@ -24,8 +24,9 @@ const AdminLoginButton = () => {
         </>
       )}
       <ModalAdminManagement />
+      <ModalWarehouse />
     </div>
   );
 };
 
-export default AdminLoginButton;
+export default AdminHeader;
