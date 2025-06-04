@@ -1,18 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Col, Row, Table } from "antd";
+import React, { useEffect, useState, useCallback } from "react";
+import { Button, Col, notification, Row, Table } from "antd";
 import dayjs from "dayjs";
+import { useAdmin } from "../context/AdminContext";
 
 const HistoriesView = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [histories, setHistories] = useState([]);
+  const { admin } = useAdmin();
+
+  const [api, contextHolder] = notification.useNotification();
+  const openNotificationWithIcon = (type, message, description) => {
+    api[type]({
+      message: message,
+      description: description,
+    });
+  };
 
   const columns = [
-    { title: "회사", dataIndex: "company", key: "company", align: "center", width: "8.3%" },
-    { title: "입고일", dataIndex: "dateIn", key: "dateIn", align: "center", render: (text) => new Date(text).toLocaleDateString(), width: "8.3%" },
-    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center", width: "8.3%" },
-    { title: "수량", dataIndex: "quantity", key: "quantity", align: "center", width: "8.3%" },
-    { title: "타이어종류", dataIndex: "type", key: "type", align: "center", width: "8.3%" },
-    { title: "창고", dataIndex: "warehouse", key: "warehouse", align: "center", render: (text) => convertWarehouseName(text), width: "8.3%" },
+    { title: "회사", dataIndex: "company", key: "company", align: "center", width: "7.6%" },
+    { title: "입고일", dataIndex: "dateIn", key: "dateIn", align: "center", render: (text) => new Date(text).toLocaleDateString(), width: "7.6%" },
+    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center", width: "7.6%" },
+    { title: "수량", dataIndex: "quantity", key: "quantity", align: "center", width: "7.6%" },
+    { title: "타이어종류", dataIndex: "type", key: "type", align: "center", width: "7.6%" },
+    { title: "창고", dataIndex: "warehouse", key: "warehouse", align: "center", render: (text) => convertWarehouseName(text), width: "7.6%" },
     {
       title: "위치",
       dataIndex: "locations",
@@ -27,14 +37,32 @@ const HistoriesView = () => {
           </Row>
         )),
     },
-    { title: "출고일", dataIndex: "dateOut", key: "dateOut", align: "center", render: (text) => (text ? new Date(text).toLocaleDateString() : ""), width: "8.3%" },
-    { title: "메모", dataIndex: "memo", key: "memo", align: "center", width: "8.3%" },
-    { title: "생성자", dataIndex: "creator", key: "creator", align: "center", width: "8.3%" },
-    { title: "이력타입", dataIndex: "historyType", key: "historyType", align: "center", render: (text) => convertHistoryType(text), width: "8.3%" },
-    { title: "이력일", dataIndex: "createdAt", key: "createdAt", align: "center", render: (text) => dayjs(text).format("YYYY-MM-DD HH:mm"), width: "8.3%" },
+    { title: "출고일", dataIndex: "dateOut", key: "dateOut", align: "center", render: (text) => (text ? new Date(text).toLocaleDateString() : ""), width: "7.6%" },
+    { title: "메모", dataIndex: "memo", key: "memo", align: "center", width: "7.6%" },
+    { title: "생성자", dataIndex: "creator", key: "creator", align: "center", width: "7.6%" },
+    { title: "이력타입", dataIndex: "historyType", key: "historyType", align: "center", render: (text) => convertHistoryType(text), width: "7.6%" },
+    { title: "이력일", dataIndex: "createdAt", key: "createdAt", align: "center", render: (text) => dayjs(text).format("YYYY-MM-DD HH:mm"), width: "7.6%" },
+    {
+      title: "",
+      dataIndex: "rollback",
+      key: "rollback",
+      align: "center",
+      render: (_, record) => (
+        <Button size="small" color="orange" variant="solid" onClick={() => handleRollback(record._id)}>
+          원복
+        </Button>
+      ),
+      width: "7.6%",
+    },
   ];
 
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
+  const fetchHistories = useCallback(async () => {
+    const res = await fetch(`${BASE_URL}/api/history/histories`);
+    const data = await res.json();
+    setHistories(data);
+  }, [BASE_URL]);
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -42,14 +70,9 @@ const HistoriesView = () => {
       const data = await res.json();
       setWarehouses(data);
     };
-    const fetchHistories = async () => {
-      const res = await fetch(`${BASE_URL}/api/history/histories`);
-      const data = await res.json();
-      setHistories(data);
-    };
     fetchWarehouses();
     fetchHistories();
-  }, [BASE_URL]);
+  }, [BASE_URL, fetchHistories]);
 
   const convertWarehouseName = (id) => {
     return warehouses.find((w) => w._id === id)?.name;
@@ -61,13 +84,37 @@ const HistoriesView = () => {
       return "수정";
     } else if (value === "DELETE") {
       return "삭제";
+    } else if (value === "ROLLBACK") {
+      return "원복";
+    }
+  };
+
+  const handleRollback = async (id) => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/history/histories/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ creator: admin }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        openNotificationWithIcon("success", data.message, "데이터가 원복 되었습니다.");
+        fetchHistories();
+      } else {
+        openNotificationWithIcon("error", data.message, "문의 바랍니다.");
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
   return (
-    <div>
-      <h2 className="text-2xl font-bold">이력 확인</h2>
-      <Table size="small" columns={columns} dataSource={histories} rowKey={(record) => record._id} locale={{ emptyText: "등록된 이력이 없습니다." }} />
-    </div>
+    <>
+      {contextHolder}
+      <div>
+        <h2 className="text-2xl font-bold">이력 확인</h2>
+        <Table size="small" columns={columns} dataSource={histories} rowKey={(record) => record._id} locale={{ emptyText: "등록된 이력이 없습니다." }} />
+      </div>
+    </>
   );
 };
 
