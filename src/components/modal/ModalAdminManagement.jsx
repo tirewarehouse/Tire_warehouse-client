@@ -7,7 +7,7 @@ import ModalAdminPasswordModify from "./ModalAdminPasswordModify";
 const ModalAdminManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [members, setMembers] = useState([]);
-  const { login } = useAdmin();
+  const { login, admin } = useAdmin();
 
   const [api, contextHolder] = notification.useNotification();
   const openNotificationWithIcon = (type, message, description) => {
@@ -59,11 +59,12 @@ const ModalAdminManagement = () => {
       title: "",
       dataIndex: "button",
       key: "button",
-      render: (_, record) => (
-        <Button size="small" color="red" variant="solid" onClick={() => onDelete(record.name)}>
-          삭제
-        </Button>
-      ),
+      render: (_, record) =>
+        admin === "관리자" && (
+          <Button size="small" color="red" variant="solid" onClick={() => onDelete(record.name)}>
+            삭제
+          </Button>
+        ),
     },
   ];
 
@@ -73,7 +74,13 @@ const ModalAdminManagement = () => {
       <Button className="ml-2" color="cyan" variant="solid" size="large" onClick={showModal}>
         관리자센터
       </Button>
-      <Modal title="관리자관리" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} footer={[<ModalAdminAdd key="addAdmin" />, <ModalAdminPasswordModify key="password" />]}>
+      <Modal
+        title="관리자관리"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[admin === "관리자" && <ModalAdminAdd key="addAdmin" />, <ModalAdminPasswordModify key="password" />]}
+      >
         <Table size="small" columns={columns} dataSource={members} locale={{ emptyText: "등록된 관리자가 없습니다." }} />
       </Modal>
     </>
