@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Button, Col, Input, InputNumber, Row, Select, Table } from 'antd';
-import LocationWarningModal from './LocationWarningModal';
+import { useEffect, useState } from "react";
+import { Button, Col, Input, InputNumber, Row, Select, Table } from "antd";
+import LocationWarningModal from "./LocationWarningModal";
 
 const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   const [data, setData] = useState([]);
@@ -9,24 +9,24 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   const columns = [
-    { title: '차량번호', dataIndex: 'carNumber', key: 'carNumber', render: (_, record) => <Input value={record.carNumber} disabled style={{ width: '120px' }} /> },
-    { title: '회사', dataIndex: 'company', key: 'company', render: (_, record) => <Input value={record.company} disabled style={{ width: '120px' }} /> },
+    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", render: (_, record) => <Input value={record.carNumber} disabled style={{ width: "120px" }} /> },
+    { title: "회사", dataIndex: "company", key: "company", render: (_, record) => <Input value={record.company} disabled style={{ width: "120px" }} /> },
     {
-      title: '입고일',
-      dataIndex: 'dateIn',
-      key: 'dateIn',
-      render: (_, record) => <input type="date" value={record.dateIn} onChange={(e) => handleChange(record._id, 'dateIn', e.target.value)} />,
+      title: "입고일",
+      dataIndex: "dateIn",
+      key: "dateIn",
+      render: (_, record) => <input type="date" value={record.dateIn} onChange={(e) => handleChange(record._id, "dateIn", e.target.value)} />,
     },
     {
-      title: '수량',
-      dataIndex: 'quantity',
-      key: 'quantity',
+      title: "수량",
+      dataIndex: "quantity",
+      key: "quantity",
       render: (_, record) => <InputNumber value={record.quantity} min={1} onChange={(value) => handleChangeQuantity(value, record._id)} />,
     },
     {
-      title: '타이어',
-      dataIndex: 'type',
-      key: 'type',
+      title: "타이어",
+      dataIndex: "type",
+      key: "type",
       render: (_, record) => (
         <Select
           className="text-xs border px-1 py-0.5 w-full"
@@ -38,38 +38,38 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       ),
     },
     {
-      title: '위치',
-      dataIndex: 'locations',
-      key: 'locations',
+      title: "위치",
+      dataIndex: "locations",
+      key: "locations",
       render: (_, record) =>
         _?.map((loc, i) => (
           <Row key={`${loc.x}-${loc.y}-${loc.z}-${i}`}>
             <Col span={8}>
               X:
-              <InputNumber value={loc.x} min={1} style={{ width: '50px' }} onChange={(value) => handleChangeLocation(value, loc._id, record, 'x')} />
+              <InputNumber value={loc.x} min={1} style={{ width: "50px" }} onChange={(value) => handleChangeLocation(value, loc._id, record, "x")} />
             </Col>
             <Col span={8}>
               Y:
-              <InputNumber value={loc.y} min={1} style={{ width: '50px' }} onChange={(value) => handleChangeLocation(value, loc._id, record, 'y')} />
+              <InputNumber value={loc.y} min={1} style={{ width: "50px" }} onChange={(value) => handleChangeLocation(value, loc._id, record, "y")} />
             </Col>
             <Col span={8}>
               Z:
-              <InputNumber value={loc.z} min={1} style={{ width: '50px' }} onChange={(value) => handleChangeLocation(value, loc._id, record, 'z')} />
+              <InputNumber value={loc.z} min={1} style={{ width: "50px" }} onChange={(value) => handleChangeLocation(value, loc._id, record, "z")} />
             </Col>
           </Row>
         )),
     },
     {
-      title: '출고일',
-      dataIndex: 'dateOut',
-      key: 'dateOut',
-      render: (_, record) => <input type="date" value={record.dateOut} onChange={(e) => handleChange(record._id, 'dateOut', e.target.value)} />,
+      title: "출고일",
+      dataIndex: "dateOut",
+      key: "dateOut",
+      render: (_, record) => <input type="date" value={record.dateOut} onChange={(e) => handleChange(record._id, "dateOut", e.target.value)} />,
     },
-    { title: '메모', dataIndex: 'memo', key: 'memo', render: (_, record) => <Input value={record.memo} onChange={(e) => handleChange(record._id, 'memo', e.target.value)} /> },
+    { title: "메모", dataIndex: "memo", key: "memo", render: (_, record) => <Input value={record.memo} onChange={(e) => handleChange(record._id, "memo", e.target.value)} /> },
     {
-      title: '저장',
-      dataIndex: 'save',
-      key: 'save',
+      title: "저장",
+      dataIndex: "save",
+      key: "save",
       render: (_, record) => (
         <span>
           <Button type="primary" variant="solid" disabled={!hasChanges(record._id)} onClick={() => handleSave(record._id)}>
@@ -95,21 +95,21 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
             _id: item._id,
             carNumber: item.carNumber,
             company: item.company,
-            dateIn: item.dateIn?.slice(0, 10) || '',
-            dateOut: item.dateOut?.slice(0, 10) || '',
+            dateIn: item.dateIn?.slice(0, 10) || "",
+            dateOut: item.dateOut?.slice(0, 10) || "",
             quantity: item.quantity,
             type: item.type,
             locations: item.locations,
-            memo: item.memo || '',
+            memo: item.memo || "",
           }))
         );
       })
-      .catch((err) => console.error('❌ 상태 변경용 데이터 불러오기 실패:', err));
+      .catch((err) => console.error("❌ 상태 변경용 데이터 불러오기 실패:", err));
 
     fetch(`${BASE_URL}/api/options/types`) // ✅ 수정
       .then((res) => res.json())
       .then((data) => setTypeOptions(data))
-      .catch((err) => console.error('❌ 타입 옵션 불러오기 실패:', err));
+      .catch((err) => console.error("❌ 타입 옵션 불러오기 실패:", err));
   }, [BASE_URL]);
 
   const handleChange = (id, field, value) => {
@@ -153,7 +153,8 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       original.dateOut?.slice(0, 10) !== edited.dateOut ||
       original.quantity !== Number(edited.quantity) ||
       original.memo !== edited.memo ||
-      original.type !== edited.type
+      original.type !== edited.type ||
+      original.locations !== edited.locations
     );
   };
 
@@ -177,8 +178,8 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       try {
         const res = await fetch(`${BASE_URL}/api/admin/update-stock`, {
           // ✅ 수정
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ carNumber, dateIn, dateOut, quantity, type, memo, locations }),
         });
 
@@ -186,7 +187,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
         alert(result.message);
         if (onInventoryUpdate) onInventoryUpdate();
       } catch (err) {
-        alert('❌ 저장 실패');
+        alert("❌ 저장 실패");
       }
     } catch (err) {
       console.error(err);
@@ -200,7 +201,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     try {
       const res = await fetch(`${BASE_URL}/api/admin/delete-stock?carNumber=${carNumber}`, {
         // ✅ 수정
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       const result = await res.json();
@@ -210,7 +211,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       setEditedData((prev) => prev.filter((item) => item.carNumber !== carNumber));
       if (onInventoryUpdate) onInventoryUpdate();
     } catch (err) {
-      alert('❌ 삭제 실패');
+      alert("❌ 삭제 실패");
     }
   };
 
