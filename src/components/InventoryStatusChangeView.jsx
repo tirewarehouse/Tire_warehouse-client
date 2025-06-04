@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ko"; // 한국어 가져오기
 import locale from "antd/es/date-picker/locale/ko_KR";
+import { useAdmin } from "../context/AdminContext";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ko");
@@ -13,7 +14,10 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   const [editedData, setEditedData] = useState([]);
   const [typeOptions, setTypeOptions] = useState([]);
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const { admin } = useAdmin();
+
   const [api, contextHolder] = notification.useNotification();
+
   const openNotificationWithIcon = (type, message, description) => {
     api[type]({
       message: message,
@@ -22,24 +26,27 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   };
 
   const columns = [
-    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", render: (_, record) => <Input value={record.carNumber} disabled style={{ width: "120px" }} /> },
-    { title: "회사", dataIndex: "company", key: "company", render: (_, record) => <Input value={record.company} disabled style={{ width: "120px" }} /> },
+    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center", render: (_, record) => <Input value={record.carNumber} disabled style={{ width: "120px" }} /> },
+    { title: "회사", dataIndex: "company", key: "company", align: "center", render: (_, record) => <Input value={record.company} disabled style={{ width: "120px" }} /> },
     {
       title: "입고일",
       dataIndex: "dateIn",
       key: "dateIn",
+      align: "center",
       render: (_, record) => <DatePicker allowClear={false} locale={locale} value={dayjs(record.dateIn)} onChange={(value) => handleChangeDateIn(value, record._id)} />,
     },
     {
       title: "수량",
       dataIndex: "quantity",
       key: "quantity",
-      render: (_, record) => <InputNumber value={record.quantity} min={1} onChange={(value) => handleChangeQuantity(value, record._id)} />,
+      align: "center",
+      render: (_, record) => <InputNumber value={record.quantity} min={1} max={100} onChange={(value) => handleChangeQuantity(value, record._id)} />,
     },
     {
       title: "타이어",
       dataIndex: "type",
       key: "type",
+      align: "center",
       render: (_, record) => (
         <Select
           className="text-xs border px-1 py-0.5 w-full"
@@ -54,6 +61,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       title: "위치",
       dataIndex: "locations",
       key: "locations",
+      align: "center",
       render: (_, record) =>
         _?.map((loc, i) => (
           <Row key={`${loc.x}-${loc.y}-${loc.z}-${i}`}>
@@ -73,21 +81,29 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       title: "출고일",
       dataIndex: "dateOut",
       key: "dateOut",
+      align: "center",
       render: (_, record) => (
         <DatePicker allowClear={false} locale={locale} value={record.dateOut ? dayjs(record.dateOut) : null} onChange={(value) => handleChangeDateOut(value, record._id)} />
       ),
     },
-    { title: "메모", dataIndex: "memo", key: "memo", render: (_, record) => <Input value={record.memo} onChange={(e) => handleChange(record._id, "memo", e.target.value)} /> },
+    {
+      title: "메모",
+      dataIndex: "memo",
+      key: "memo",
+      align: "center",
+      render: (_, record) => <Input value={record.memo} onChange={(e) => handleChange(record._id, "memo", e.target.value)} />,
+    },
     {
       title: "저장",
       dataIndex: "save",
       key: "save",
+      align: "center",
       render: (_, record) => (
         <span>
           <Button type="primary" variant="solid" onClick={() => handleSave(record._id)}>
             저장
           </Button>
-          <Button color="danger" variant="solid" onClick={() => handleDelete(record.carNumber)}>
+          <Button color="danger" variant="solid" onClick={() => handleDelete(record.carNumber, record._id)}>
             삭제
           </Button>
         </span>
@@ -232,6 +248,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
 
         const result = await res.json();
         alert(result.message);
+        onSaveHistory(id, "UPDATE");
         if (onInventoryUpdate) onInventoryUpdate();
       } catch (err) {
         alert("❌ 저장 실패");
@@ -241,11 +258,35 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     }
   };
 
-  const handleDelete = async (carNumber) => {
+  const onSaveHistory = async (id, historyType) => {
+    const originData = await fetch(`${BASE_URL}/api/admin/get-detail?id=${id}`)
+      .then((res) => res.json())
+      .then((res) => res);
+    const request = {
+      carNumber: originData.carNumber,
+      dateIn: originData.dateIn,
+      dateOut: originData.dateOut,
+      quantity: originData.quantity,
+      type: originData.type,
+      locations: originData.locations,
+      warehouse: originData.warehouse,
+      memo: originData.memo,
+      historyType,
+      creator: admin,
+      company: originData.company,
+    };
+    fetch(`${BASE_URL}/api/history/histories`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+  };
+
+  const handleDelete = async (carNumber, id) => {
     const confirmed = window.confirm(`정말 삭제하시겠습니까?\n차량번호: ${carNumber}`);
     if (!confirmed) return;
-
     try {
+      onSaveHistory(id, "DELETE");
       const res = await fetch(`${BASE_URL}/api/admin/delete-stock?carNumber=${carNumber}`, {
         // ✅ 수정
         method: "DELETE",
@@ -265,7 +306,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     <div>
       {contextHolder}
       <h2 className="text-2xl font-bold">📦 재고 상태 변경</h2>
-      <Table align="center" columns={columns} dataSource={editedData} rowKey={(record) => record._id} />
+      <Table size="small" columns={columns} dataSource={editedData} rowKey={(record) => record._id} locale={{ emptyText: "등록된 재고가 없습니다." }} />
       {showWarningModal && <LocationWarningModal onClose={() => setShowWarningModal(false)} />}
     </div>
   );
