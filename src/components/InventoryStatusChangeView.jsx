@@ -13,6 +13,8 @@ dayjs.locale("ko");
 const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   const [editedData, setEditedData] = useState([]);
   const [typeOptions, setTypeOptions] = useState([]);
+  const [warehouseOptions, setWarehouseOptions] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const { admin } = useAdmin();
 
@@ -26,8 +28,8 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   };
 
   const columns = [
-    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center", render: (_, record) => <Input value={record.carNumber} disabled style={{ width: "120px" }} /> },
-    { title: "회사", dataIndex: "company", key: "company", align: "center", render: (_, record) => <Input value={record.company} disabled style={{ width: "120px" }} /> },
+    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center" },
+    { title: "회사", dataIndex: "company", key: "company", align: "center", render: (value) => convertCompanyName(value) },
     {
       title: "입고일",
       dataIndex: "dateIn",
@@ -56,6 +58,13 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
           options={typeOptions.map((opt) => ({ label: opt.name, value: opt._id }))}
         ></Select>
       ),
+    },
+    {
+      title: "창고",
+      dataIndex: "warehouse",
+      key: "warehouse",
+      align: "center",
+      render: (_, record) => <Select value={record.warehouse} style={{ width: "120px" }} options={warehouseOptions.map((opt) => ({ label: opt.name, value: opt._id }))}></Select>,
     },
     {
       title: "위치",
@@ -126,6 +135,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
             dateOut: item.dateOut || null,
             quantity: item.quantity,
             type: item.type,
+            warehouse: item.warehouse,
             locations: item.locations,
             memo: item.memo || "",
           }))
@@ -137,6 +147,16 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       .then((res) => res.json())
       .then((data) => setTypeOptions(data))
       .catch((err) => console.error("❌ 타입 옵션 불러오기 실패:", err));
+
+    fetch(`${BASE_URL}/api/warehouse/warehouses`)
+      .then((res) => res.json())
+      .then((data) => setWarehouseOptions(data))
+      .catch((err) => console.error("❌ 창고 옵션 불러오기 실패:", err));
+
+    fetch(`${BASE_URL}/api/options/companies`)
+      .then((res) => res.json())
+      .then((data) => setCompanies(data))
+      .catch((err) => console.error("❌ 회사 옵션 불러오기 실패:", err));
   }, [BASE_URL]);
 
   const handleChange = (id, field, value) => {
@@ -302,13 +322,19 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     }
   };
 
+  const convertCompanyName = (value) => {
+    const company = companies.find((item) => item._id === value);
+    const companyName = companies.find((item) => item.name === value);
+    return company ? company.name : companyName ? companyName.name : value;
+  };
+
   return (
-    <div>
+    <>
       {contextHolder}
       <h2 className="text-2xl font-bold">📦 재고 상태 변경</h2>
-      <Table size="small" columns={columns} dataSource={editedData} rowKey={(record) => record._id} locale={{ emptyText: "등록된 재고가 없습니다." }} />
+      <Table size="small" columns={columns} dataSource={editedData} rowKey={(record) => record._id} scroll={{ y: 60 * 10 }} locale={{ emptyText: "등록된 재고가 없습니다." }} />
       {showWarningModal && <LocationWarningModal onClose={() => setShowWarningModal(false)} />}
-    </div>
+    </>
   );
 };
 

@@ -1,13 +1,14 @@
-import { Col, Row, Table } from "antd";
 import React, { useState, useEffect } from "react";
+import { Col, Row, Table } from "antd";
 
 const InventoryList = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [warehouses, setWarehouses] = useState([]);
+  const [companies, setCompanies] = useState([]);
 
   const columns = [
-    { title: "회사", dataIndex: "company", key: "company", align: "center" },
+    { title: "회사", dataIndex: "company", key: "company", align: "center", render: (value) => convertCompanyName(value) },
     { title: "입고일", dataIndex: "dateIn", key: "dateIn", align: "center", render: (text) => new Date(text).toLocaleDateString() },
     { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center" },
     { title: "수량", dataIndex: "quantity", key: "quantity", align: "center" },
@@ -46,6 +47,11 @@ const InventoryList = () => {
         console.error("데이터 불러오기 실패:", err);
         setError("재고 정보를 불러오는 데 실패했습니다.");
       });
+
+    fetch(`${BASE_URL}/api/options/companies`)
+      .then((res) => res.json())
+      .then((data) => setCompanies(data))
+      .catch((err) => console.error("❌ 회사 옵션 불러오기 실패:", err));
   }, [BASE_URL]);
 
   useEffect(() => {
@@ -61,6 +67,12 @@ const InventoryList = () => {
     return warehouses.find((w) => w._id === id)?.name;
   };
 
+  const convertCompanyName = (id) => {
+    const company = companies.find((item) => item._id === id);
+    const companyName = companies.find((item) => item.name === id);
+    return company ? company.name : companyName ? companyName.name : id;
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold">재고 리스트 확인</h2>
@@ -69,7 +81,7 @@ const InventoryList = () => {
           {error} <br /> (Failed to fetch)
         </div>
       ) : (
-        <Table size="small" columns={columns} dataSource={data} rowKey={(record) => record._id} locale={{ emptyText: "등록된 재고가 없습니다." }} />
+        <Table id="printArea" size="small" columns={columns} dataSource={data} rowKey={(record) => record._id} scroll={{ y: 60 * 10 }} locale={{ emptyText: "등록된 재고가 없습니다." }} />
       )}
     </div>
   );

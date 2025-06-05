@@ -112,7 +112,7 @@ const HistoriesView = () => {
       {contextHolder}
       <div>
         <h2 className="text-2xl font-bold">이력 확인</h2>
-        <Table size="small" columns={columns} dataSource={histories} rowKey={(record) => record._id} locale={{ emptyText: "등록된 이력이 없습니다." }} />
+        <Table size="small" columns={columns} dataSource={histories} rowKey={(record) => record._id} scroll={{ y: 60 * 10 }} locale={{ emptyText: "등록된 이력이 없습니다." }} />
       </div>
     </>
   );

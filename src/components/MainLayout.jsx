@@ -8,6 +8,7 @@ import AdminInModal from "./AdminInModal";
 import InventoryStatusChangeView from "./InventoryStatusChangeView";
 import CompanyManagementModal from "./CompanyManagementModal";
 import HistoriesView from "./HistoriesView";
+import ModalStockUp from "./modal/ModalStockUp";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -20,6 +21,7 @@ const App = () => {
     { key: 4, icon: <SyncOutlined />, label: "재고 상태 변경", visible_column: admin ? "true" : "false", onClick: () => handleShowInventoryStatusChangeView() },
     { key: 5, icon: <ReconciliationOutlined />, label: "회사 관리", visible_column: admin ? "true" : "false", onClick: () => setShowCompanyModal(true) },
     { key: 6, icon: <HistoryOutlined />, label: "이력 관리", visible_column: admin ? "true" : "false", onClick: () => handleShowHistoryView(true) },
+    { key: 7, icon: <PlusOutlined />, label: "재고 추가", visible_column: admin ? "true" : "false", onClick: () => setShowStockUpModal(true) },
   ];
   const filterItems = items.filter((item) => item.visible_column === "true");
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -31,6 +33,8 @@ const App = () => {
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [showInventoryStatusChangeView, setShowInventoryStatusChangeView] = useState(false);
   const [showHistoryView, setShowHistoryView] = useState(false);
+  const [showStockUpModal, setShowStockUpModal] = useState(false);
+
 
   const handleModalClose = () => {
     setShowInModal(false);
@@ -82,6 +86,7 @@ const App = () => {
         {showSearchModal && <SearchModal onClose={() => setShowSearchModal(false)} />}
         {showInModal && <AdminInModal onClose={handleModalClose} />}
         {showCompanyModal && <CompanyManagementModal onClose={() => setShowCompanyModal(false)} />}
+        {showStockUpModal && <ModalStockUp open={showStockUpModal} onCancel={() => setShowStockUpModal(false)} />}
         <div className="bg-white p-2 rounded shadow text-sm">
           <div className="font-bold mb-1">재고 현황</div>
 
@@ -109,13 +114,13 @@ const App = () => {
           )}
         </div>
       </Sider>
-      <Layout>
+      <Layout style={{ height: "100vh" }}>
         <Header style={{ padding: 0, background: colorBgContainer }} />
         <Content style={{ margin: "24px 16px 0" }}>
           <div
             style={{
               padding: 24,
-              minHeight: 360,
+              height: "100%",
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
             }}
