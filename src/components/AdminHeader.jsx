@@ -23,8 +23,12 @@ const AdminHeader = () => {
           {showModal && <AdminLoginModal onClose={() => setShowModal(false)} />}
         </>
       )}
-      <ModalAdminManagement />
-      <ModalWarehouse />
+      {admin && (
+        <>
+          <ModalAdminManagement />
+          <ModalWarehouse />
+        </>
+      )}
     </div>
   );
 };
