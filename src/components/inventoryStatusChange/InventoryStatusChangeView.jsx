@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Button, Col, DatePicker, Input, InputNumber, notification, Row, Select, Table } from "antd";
-import LocationWarningModal from "./LocationWarningModal";
+import LocationWarningModal from "../LocationWarningModal";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ko"; // 한국어 가져오기
 import locale from "antd/es/date-picker/locale/ko_KR";
-import { useAdmin } from "../context/AdminContext";
+import { useAdmin } from "../../context/AdminContext";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ko");
@@ -28,14 +28,15 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   };
 
   const columns = [
-    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center" },
-    { title: "회사", dataIndex: "company", key: "company", align: "center", render: (value) => convertCompanyName(value) },
+    { title: "차량번호", dataIndex: "carNumber", key: "carNumber", align: "center", width: "8%" },
+    { title: "회사", dataIndex: "company", key: "company", align: "center", render: (value) => convertCompanyName(value), width: "8%" },
     {
       title: "입고일",
       dataIndex: "dateIn",
       key: "dateIn",
       align: "center",
       render: (_, record) => <DatePicker allowClear={false} locale={locale} value={dayjs(record.dateIn)} onChange={(value) => handleChangeDateIn(value, record._id)} />,
+      width: "10%",
     },
     {
       title: "수량",
@@ -43,6 +44,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       key: "quantity",
       align: "center",
       render: (_, record) => <InputNumber value={record.quantity} min={1} max={100} onChange={(value) => handleChangeQuantity(value, record._id)} />,
+      width: "8%",
     },
     {
       title: "타이어",
@@ -58,6 +60,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
           options={typeOptions.map((opt) => ({ label: opt.name, value: opt._id }))}
         ></Select>
       ),
+      width: "10%",
     },
     {
       title: "창고",
@@ -65,6 +68,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       key: "warehouse",
       align: "center",
       render: (_, record) => <Select value={record.warehouse} style={{ width: "120px" }} options={warehouseOptions.map((opt) => ({ label: opt.name, value: opt._id }))}></Select>,
+      width: "10%",
     },
     {
       title: "위치",
@@ -85,6 +89,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
             </Col>
           </Row>
         )),
+      width: "18%",
     },
     {
       title: "출고일",
@@ -94,6 +99,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       render: (_, record) => (
         <DatePicker allowClear={false} locale={locale} value={record.dateOut ? dayjs(record.dateOut) : null} onChange={(value) => handleChangeDateOut(value, record._id)} />
       ),
+      width: "10%",
     },
     {
       title: "메모",
@@ -101,6 +107,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       key: "memo",
       align: "center",
       render: (_, record) => <Input value={record.memo} onChange={(e) => handleChange(record._id, "memo", e.target.value)} />,
+      width: "10%",
     },
     {
       title: "저장",
@@ -109,14 +116,15 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       align: "center",
       render: (_, record) => (
         <span>
-          <Button type="primary" variant="solid" onClick={() => handleSave(record._id)}>
+          <Button type="primary" size="small" variant="solid" onClick={() => handleSave(record._id)}>
             저장
           </Button>
-          <Button color="danger" variant="solid" onClick={() => handleDelete(record.carNumber, record._id)}>
+          <Button color="danger" size="small" variant="solid" onClick={() => handleDelete(record.carNumber, record._id)}>
             삭제
           </Button>
         </span>
       ),
+      width: "8%",
     },
   ];
 

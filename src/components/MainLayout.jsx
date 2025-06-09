@@ -3,11 +3,11 @@ import { SearchOutlined, FileSearchOutlined, PlusOutlined, SyncOutlined, Reconci
 import { Layout, Menu, Spin, theme } from "antd";
 import { useAdmin } from "../context/AdminContext";
 import SearchModal from "./SearchModal";
-import InventoriesView from "./InventoriesView";
+import InventoriesView from "./inventory/InventoriesView";
 import AdminInModal from "./AdminInModal";
-import InventoryStatusChangeView from "./InventoryStatusChangeView";
+import InventoryStatusChangeView from "./inventoryStatusChange/InventoryStatusChangeView";
 import CompanyManagementModal from "./CompanyManagementModal";
-import HistoriesView from "./HistoriesView";
+import HistoriesView from "./history/HistoriesView";
 import ModalStockUp from "./modal/ModalStockUp";
 
 const { Header, Content, Footer, Sider } = Layout;

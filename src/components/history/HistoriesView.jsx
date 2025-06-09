@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Button, Col, notification, Row, Table } from "antd";
 import dayjs from "dayjs";
-import { useAdmin } from "../context/AdminContext";
+import { useAdmin } from "../../context/AdminContext";
 
 const HistoriesView = () => {
   const [warehouses, setWarehouses] = useState([]);
