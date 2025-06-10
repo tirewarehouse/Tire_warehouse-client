@@ -1,15 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { SearchOutlined, FileSearchOutlined, PlusOutlined, SyncOutlined, ReconciliationOutlined, HistoryOutlined } from "@ant-design/icons";
 import { Layout, Menu, Spin, theme } from "antd";
+import { SearchOutlined, FileSearchOutlined, PlusOutlined, SyncOutlined, ReconciliationOutlined, HistoryOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { getSearchAll } from "../js/api/search";
 import { useAdmin } from "../context/AdminContext";
+import AdminInModal from "./modal/AdminInModal";
 import SearchModal from "./modal/SearchModal";
 import InventoriesView from "./inventory/InventoriesView";
-import AdminInModal from "./modal/AdminInModal";
 import InventoryStatusChangeView from "./inventoryStatusChange/InventoryStatusChangeView";
 import CompanyManagementModal from "./modal/CompanyManagementModal";
 import HistoriesView from "./history/HistoriesView";
 import ModalStockUp from "./modal/ModalStockUp";
-import dayjs from "dayjs";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -30,7 +31,6 @@ const App = () => {
   const [showInModal, setShowInModal] = useState(false);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [showInventoryStatusChangeView, setShowInventoryStatusChangeView] = useState(false);
   const [showHistoryView, setShowHistoryView] = useState(false);
@@ -59,26 +59,17 @@ const App = () => {
     setShowInventoryStatusChangeView(false);
   };
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
   const fetchInventory = useCallback(() => {
     setLoading(true);
-    fetch(`${BASE_URL}/api/search/all`)
-      .then((res) => res.json())
-      .then((data) => {
-        setInventory(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("재고 현황 불러오기 실패:", err);
-        setError("재고 정보를 불러오는 데 실패했습니다. (" + err.message + ")");
-        setLoading(false);
-      });
-  }, [BASE_URL]);
+    getSearchAll().then((data) => {
+      setInventory(data);
+      setLoading(false);
+    });
+  }, []);
 
   useEffect(() => {
     fetchInventory();
-  }, [BASE_URL, fetchInventory]);
+  }, [fetchInventory]);
 
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -110,8 +101,6 @@ const App = () => {
 
           {loading ? (
             <Spin size="small">불러오는 중...</Spin>
-          ) : error ? (
-            <p className="text-xs text-red-500">{error}</p>
           ) : (
             <table className="w-full text-left border border-gray-300 text-xs">
               <thead>

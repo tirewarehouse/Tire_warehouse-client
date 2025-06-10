@@ -4,6 +4,9 @@ import ModalCarAdd from "./ModalCarAdd";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import locale from "antd/es/date-picker/locale/ko_KR";
+import { getCompanies, getTypes } from "../../js/api/options";
+import { getWarehouses } from "../../js/api/warehouse";
+import { getCheckLocations, postInventoryIn } from "../../js/api/inventory";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ko");
@@ -151,27 +154,18 @@ const ModalStockUp = ({ open, onCancel }) => {
     setInventory(newInventory);
   };
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const resCompanies = await fetch(`${BASE_URL}/api/options/companies`);
-        const resTypes = await fetch(`${BASE_URL}/api/options/types`);
-        const resWarehouses = await fetch(`${BASE_URL}/api/warehouse/warehouses`);
-        const companiesData = await resCompanies.json();
-        const typesData = await resTypes.json();
-        const warehousesData = await resWarehouses.json();
-        setCompanies(companiesData);
-        setTypes(typesData);
-        setWarehouses(warehousesData);
+        getCompanies().then((data) => setCompanies(data));
+        getTypes().then((data) => setTypes(data));
+        getWarehouses().then((data) => setWarehouses(data));
       } catch (err) {
         console.error("옵션 불러오기 실패:", err);
       }
     };
-
     fetchOptions();
-  }, [BASE_URL]);
+  }, []);
 
   const handleAddCar = (carNumber, quantity) => {
     const locationAdd = [];
@@ -199,22 +193,15 @@ const ModalStockUp = ({ open, onCancel }) => {
 
   const handleSubmit = () => {
     handleCheckLocation();
-    inventory.forEach((item) => {
-      fetch(`${BASE_URL}/api/admin/in`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(item),
-      });
-    });
+    inventory.forEach((item) => postInventoryIn(item));
     openNotificationWithIcon("success", "재고 추가 성공", "재고가 추가되었습니다.");
   };
 
   const handleCheckLocation = async () => {
     for (const item of inventory) {
       for (const loc of item.locations) {
-        const res = await fetch(`${BASE_URL}/api/admin/check-locations?x=${loc.x}&y=${loc.y}&z=${loc.z}&warehouse=${item.warehouse}`);
-        const data = await res.json();
-        if (data.exists) {
+        const res = await getCheckLocations({ x: loc.x, y: loc.y, z: loc.z, warehouse: item.warehouse });
+        if (res.exists) {
           openNotificationWithIcon("error", "위치 중복", `${item.carNumber} 차량의 X:${loc.x}, Y:${loc.y}, Z:${loc.z} 위치가 중복되었습니다.`);
           return;
         }
@@ -267,7 +254,14 @@ const ModalStockUp = ({ open, onCancel }) => {
             </Form.Item>
           )}
         </Form>
-        <Table size="small" dataSource={inventory} columns={columns} rowKey={(record, index) => index} locale={{ emptyText: "등록된 차량이 없습니다." }} pagination={false} />
+        <Table
+          size="small"
+          dataSource={inventory}
+          columns={columns}
+          rowKey={(record, index) => `carNumber-${index}`}
+          locale={{ emptyText: "등록된 차량이 없습니다." }}
+          pagination={false}
+        />
       </Modal>
       {showCarAddModal && <ModalCarAdd open={showCarAddModal} onCancel={() => setShowCarAddModal(false)} onAddCar={handleAddCar} />}
     </>

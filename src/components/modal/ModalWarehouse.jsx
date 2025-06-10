@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Input, Modal, notification, Table } from "antd";
 import { useAdmin } from "../../context/AdminContext";
 import { PlusOutlined } from "@ant-design/icons";
+import { getWarehouses, postWarehouse, putWarehouse } from "../../js/api/warehouse";
 
 const ModalWarehouse = () => {
   const [warehouses, setWarehouses] = useState([]);
@@ -67,16 +68,13 @@ const ModalWarehouse = () => {
     setWarehouses(warehouses.map((item, i) => (i === index ? { ...item, memo: value } : item)));
   };
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   useEffect(() => {
-    const getWarehouses = async () => {
+    const getWarehouse = async () => {
       if (!isModalOpen || !login) return;
-      const res = await fetch(`${BASE_URL}/api/warehouse/warehouses`);
-      const data = await res.json();
-      setWarehouses(data);
+      getWarehouses().then((data) => setWarehouses(data));
     };
-    getWarehouses();
-  }, [isModalOpen, login, BASE_URL]);
+    getWarehouse();
+  }, [isModalOpen, login]);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -88,30 +86,19 @@ const ModalWarehouse = () => {
     setIsModalOpen(false);
   };
   const onSave = async (record, index) => {
-    console.log("🚀 ~ onSave ~ index:", index);
     if (record._id) {
-      const res = await fetch(`${BASE_URL}/api/warehouse/warehouses/${record._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(record),
-      });
-      const data = await res.json();
-      if (data.success) {
-        openNotificationWithIcon("success", data.message, "창고 정보가 수정되었습니다.");
+      const res = await putWarehouse(record._id, record);
+      if (res.success) {
+        openNotificationWithIcon("success", res.message, "창고 정보가 수정되었습니다.");
       } else {
-        openNotificationWithIcon("error", data.message, "문의 바랍니다.");
+        openNotificationWithIcon("error", res.message, "문의 바랍니다.");
       }
     } else {
-      const res = await fetch(`${BASE_URL}/api/warehouse/warehouses`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(warehouses[index]),
-      });
-      const data = await res.json();
-      if (data.success) {
-        openNotificationWithIcon("success", data.message, "창고 정보가 등록되었습니다.");
+      const res = await postWarehouse(warehouses[index]);
+      if (res.success) {
+        openNotificationWithIcon("success", res.message, "창고 정보가 등록되었습니다.");
       } else {
-        openNotificationWithIcon("error", data.message, "문의 바랍니다.");
+        openNotificationWithIcon("error", res.message, "문의 바랍니다.");
       }
     }
   };
@@ -128,7 +115,7 @@ const ModalWarehouse = () => {
         <Button icon={<PlusOutlined />} onClick={addRow}>
           추가
         </Button>
-        <Table size="small" columns={columns} dataSource={warehouses} locale={{ emptyText: "등록된 창고가 없습니다." }} />
+        <Table size="small" columns={columns} dataSource={warehouses} locale={{ emptyText: "등록된 창고가 없습니다." }} rowKey={(record, index) => `warehouse-${index}`} />
       </Modal>
     </>
   );

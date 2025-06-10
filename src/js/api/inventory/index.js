@@ -35,7 +35,7 @@ export const getCheckLocations = async (params = {}) => {
 };
 
 export const getInventoryDetails = async (params = {}) => {
-  const res = await fetch(`${BASE_URL}/api/inventory/details?${new URLSearchParams(params).toString()}`, {
+  const res = await fetch(`${BASE_URL}/api/inventory/get-detail?${new URLSearchParams(params).toString()}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export const getInventoryDetails = async (params = {}) => {
 };
 
 export const getCheckCarNumber = async (params = {}) => {
-  const res = await fetch(`${BASE_URL}/api/inventory/check-car-number?${new URLSearchParams(params).toString()}`, {
+  const res = await fetch(`${BASE_URL}/api/inventory/check-car?${new URLSearchParams(params).toString()}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

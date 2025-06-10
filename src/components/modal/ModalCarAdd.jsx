@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Modal, notification } from "antd";
+import { getCheckCarNumber } from "../../js/api/inventory";
 
 const ModalCarAdd = ({ open, onCancel, onAddCar }) => {
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
   const [carNumber, setCarNumber] = useState("");
   const [quantity, setQuantity] = useState("0");
 
@@ -29,9 +28,8 @@ const ModalCarAdd = ({ open, onCancel, onAddCar }) => {
       openNotificationWithIcon("error", "차량 추가 실패", "번호판 양식에 맞춰 써 주세요.");
     } else {
       try {
-        const res = await fetch(`${BASE_URL}/api/admin/check-car?carNumber=${cleaned}`);
-        const data = await res.json();
-        if (data.exists) {
+        const res = await getCheckCarNumber({ carNumber: cleaned });
+        if (res.exists) {
           openNotificationWithIcon("error", "차량 추가 실패", "이미 등록된 차량입니다.");
         } else {
           onAddCar(cleaned, quantity);

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Col, Row, Table } from "antd";
+import { getSearchAll } from "../../js/api/search";
+import { getCompanies, getTypes } from "../../js/api/options";
+import { getWarehouses } from "../../js/api/warehouse";
 
 const InventoriesView = () => {
   const [data, setData] = useState([]);
@@ -57,41 +60,25 @@ const InventoriesView = () => {
     { title: "메모", dataIndex: "memo", key: "memo", align: "center" },
   ];
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-
   useEffect(() => {
-    fetch(`${BASE_URL}/api/search/all`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("서버 응답 실패");
-        }
-        return res.json();
-      })
-      .then((resData) => setData(resData))
+    getSearchAll()
+      .then((data) => setData(data))
       .catch((err) => {
         console.error("데이터 불러오기 실패:", err);
         setError("재고 정보를 불러오는 데 실패했습니다.");
       });
 
-    fetch(`${BASE_URL}/api/options/companies`)
-      .then((res) => res.json())
+    getCompanies()
       .then((data) => setCompanies(data))
       .catch((err) => console.error("❌ 회사 옵션 불러오기 실패:", err));
 
-    fetch(`${BASE_URL}/api/options/types`)
-      .then((res) => res.json())
+    getTypes()
       .then((data) => setTypeOptions(data))
       .catch((err) => console.error("❌ 타입 옵션 불러오기 실패:", err));
-  }, [BASE_URL]);
-
-  useEffect(() => {
-    const fetchWarehouses = async () => {
-      const res = await fetch(`${BASE_URL}/api/warehouse/warehouses`);
-      const data = await res.json();
-      setWarehouses(data);
-    };
-    fetchWarehouses();
-  }, [BASE_URL]);
+    getWarehouses()
+      .then((data) => setWarehouses(data))
+      .catch((err) => console.error("❌ 창고 옵션 불러오기 실패:", err));
+  }, []);
 
   const convertWarehouseName = (id) => {
     return warehouses.find((w) => w._id === id)?.name;

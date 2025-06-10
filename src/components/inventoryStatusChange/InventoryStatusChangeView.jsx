@@ -7,6 +7,10 @@ import "dayjs/locale/ko"; // 한국어 가져오기
 import locale from "antd/es/date-picker/locale/ko_KR";
 import { useAdmin } from "../../context/AdminContext";
 import { postHistory } from "../../js/api/history";
+import { getSearchAll } from "../../js/api/search";
+import { getCompanies, getTypes } from "../../js/api/options";
+import { getWarehouses } from "../../js/api/warehouse";
+import { getInventoryDetails } from "../../js/api/inventory";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ko");
@@ -132,40 +136,27 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 추가
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/search/all`) // ✅ 수정
-      .then((res) => res.json())
-      .then((resData) => {
-        setEditedData(
-          resData.map((item) => ({
-            _id: item._id,
-            carNumber: item.carNumber,
-            company: item.company,
-            dateIn: item.dateIn,
-            dateOut: item.dateOut || null,
-            quantity: item.quantity,
-            type: item.type,
-            warehouse: item.warehouse,
-            locations: item.locations,
-            memo: item.memo || "",
-          }))
-        );
-      })
-      .catch((err) => console.error("❌ 상태 변경용 데이터 불러오기 실패:", err));
+    getSearchAll().then((data) => {
+      setEditedData(
+        data.map((item) => ({
+          _id: item._id,
+          carNumber: item.carNumber,
+          company: item.company,
+          dateIn: item.dateIn,
+          dateOut: item.dateOut || null,
+          quantity: item.quantity,
+          type: item.type,
+          warehouse: item.warehouse,
+          locations: item.locations,
+          memo: item.memo || "",
+        }))
+      );
+    });
+    getTypes().then((data) => setTypeOptions(data));
 
-    fetch(`${BASE_URL}/api/options/types`) // ✅ 수정
-      .then((res) => res.json())
-      .then((data) => setTypeOptions(data))
-      .catch((err) => console.error("❌ 타입 옵션 불러오기 실패:", err));
+    getWarehouses().then((data) => setWarehouseOptions(data));
 
-    fetch(`${BASE_URL}/api/warehouse/warehouses`)
-      .then((res) => res.json())
-      .then((data) => setWarehouseOptions(data))
-      .catch((err) => console.error("❌ 창고 옵션 불러오기 실패:", err));
-
-    fetch(`${BASE_URL}/api/options/companies`)
-      .then((res) => res.json())
-      .then((data) => setCompanies(data))
-      .catch((err) => console.error("❌ 회사 옵션 불러오기 실패:", err));
+    getCompanies().then((data) => setCompanies(data));
   }, [BASE_URL]);
 
   const handleChange = (id, field, value) => {
@@ -222,9 +213,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   };
 
   const checkDisabled = async (id) => {
-    const originData = await fetch(`${BASE_URL}/api/admin/get-detail?id=${id}`)
-      .then((res) => res.json())
-      .then((res) => res);
+    const originData = await getInventoryDetails({ id });
     const edited = editedData.find((item) => item._id === id);
     let locationsCompare = true;
     if (originData.locations.length === edited.locations.length) {

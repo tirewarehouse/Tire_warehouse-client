@@ -1,0 +1,35 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 외부 타이어 원 -->
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#333" stroke-width="12"></circle>
+  
+  <!-- 내부 타이어 원 -->
+  <circle cx="100" cy="100" r="70" fill="none" stroke="#333" stroke-width="8"></circle>
+  
+  <!-- 타이어 트레드 패턴 -->
+  
+  
+  <!-- 개선된 타이어 림 디자인 -->
+  <g stroke="#333" stroke-width="3">
+    <!-- 외부 림 -->
+    <circle cx="100" cy="100" r="45" fill="none"></circle>
+    
+    <!-- 림 스포크 -->
+    <g stroke-width="4">
+      <!-- 5개의 스포크 -->
+      <line x1="100" y1="55" x2="100" y2="145"></line>
+      <line x1="55" y1="100" x2="145" y2="100"></line>
+      <line x1="68" y1="68" x2="132" y2="132"></line>
+      <line x1="68" y1="132" x2="132" y2="68"></line>
+      
+      <!-- 내부 원 -->
+      <circle cx="100" cy="100" r="35" fill="none" stroke-width="2"></circle>
+      
+      <!-- 중앙 허브 -->
+      <circle cx="100" cy="100" r="15" fill="none" stroke-width="3"></circle>
+      <circle cx="100" cy="100" r="8" fill="#333"></circle>
+    </g>
+  </g>
+  
+  <!-- 회사명 약자 -->
+  
+</svg>

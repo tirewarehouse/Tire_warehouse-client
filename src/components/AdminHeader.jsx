@@ -6,7 +6,6 @@ import ModalLogin from "./modal/ModalLogin";
 
 const AdminHeader = () => {
   const { admin } = useAdmin();
-  // const [showModal, setShowModal] = useState(false);
 
   return (
     <div className="absolute top-4 right-4">

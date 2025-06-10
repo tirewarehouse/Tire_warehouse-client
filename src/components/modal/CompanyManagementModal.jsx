@@ -1,61 +1,51 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { deleteCompany, getCompanies, postCompany } from "../../js/api/company";
 
 const CompanyManagementModal = ({ onClose }) => {
   const [companies, setCompanies] = useState([]);
-  const [newCompany, setNewCompany] = useState('');
-  const [error, setError] = useState('');
-
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+  const [newCompany, setNewCompany] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/admin/companies`)
-      .then(res => res.json())
-      .then(data => setCompanies(data))
-      .catch(err => console.error('회사 목록 불러오기 실패:', err));
-  }, [BASE_URL]);
+    getCompanies().then((data) => setCompanies(data));
+  }, []);
 
   const handleAdd = async () => {
     const trimmed = newCompany.trim();
     if (!trimmed) {
-      setError('회사명을 입력해주세요.');
+      setError("회사명을 입력해주세요.");
       return;
     }
 
-    if (companies.some(c => c.name === trimmed)) {
-      setError('이미 등록된 회사입니다.');
+    if (companies.some((c) => c.name === trimmed)) {
+      setError("이미 등록된 회사입니다.");
       return;
     }
 
     try {
-      const res = await fetch(`${BASE_URL}/api/admin/companies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmed })
-      });
-
-      const data = await res.json();
+      const res = await postCompany({ name: trimmed });
       if (res.ok) {
-        setCompanies(prev => [...prev, data]);
-        setNewCompany('');
-        setError('');
+        setCompanies((prev) => [...prev, res]);
+        setNewCompany("");
+        setError("");
       } else {
-        setError(data.message || '추가 실패');
+        setError(res.message || "추가 실패");
       }
     } catch (err) {
-      console.error('추가 중 오류:', err);
-      setError('서버 오류');
+      console.error("추가 중 오류:", err);
+      setError("서버 오류");
     }
   };
 
   const handleDelete = async (id) => {
-    const confirmed = window.confirm('정말 삭제하시겠습니까?');
+    const confirmed = window.confirm("정말 삭제하시겠습니까?");
     if (!confirmed) return;
 
     try {
-      await fetch(`${BASE_URL}/api/admin/companies/${id}`, { method: 'DELETE' });
-      setCompanies(prev => prev.filter(c => c._id !== id));
+      await deleteCompany(id);
+      setCompanies((prev) => prev.filter((c) => c._id !== id));
     } catch (err) {
-      console.error('삭제 실패:', err);
+      console.error("삭제 실패:", err);
     }
   };
 
@@ -66,13 +56,10 @@ const CompanyManagementModal = ({ onClose }) => {
 
         <div className="space-y-2 mb-4">
           {companies.length > 0 ? (
-            companies.map(c => (
+            companies.map((c) => (
               <div key={c._id} className="flex justify-between items-center border px-3 py-1 rounded">
                 <span>{c.name}</span>
-                <button
-                  onClick={() => handleDelete(c._id)}
-                  className="text-sm text-red-500 hover:underline"
-                >
+                <button onClick={() => handleDelete(c._id)} className="text-sm text-red-500 hover:underline">
                   삭제
                 </button>
               </div>
@@ -88,7 +75,7 @@ const CompanyManagementModal = ({ onClose }) => {
           value={newCompany}
           onChange={(e) => setNewCompany(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === "Enter") {
               e.preventDefault();
               handleAdd();
             }
@@ -98,16 +85,10 @@ const CompanyManagementModal = ({ onClose }) => {
         {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
 
         <div className="flex justify-between">
-          <button
-            onClick={handleAdd}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
+          <button onClick={handleAdd} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             추가
           </button>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:underline"
-          >
+          <button onClick={onClose} className="text-gray-500 hover:underline">
             닫기
           </button>
         </div>
