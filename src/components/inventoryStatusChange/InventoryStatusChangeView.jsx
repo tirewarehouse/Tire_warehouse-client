@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Button, Col, DatePicker, Input, InputNumber, notification, Row, Select, Table } from "antd";
-import LocationWarningModal from "../LocationWarningModal";
+import LocationWarningModal from "../modal/LocationWarningModal";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ko"; // 한국어 가져오기
 import locale from "antd/es/date-picker/locale/ko_KR";
 import { useAdmin } from "../../context/AdminContext";
+import { postHistory } from "../../js/api/history";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ko");
@@ -303,11 +304,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       creator: admin,
       company: originData.company,
     };
-    fetch(`${BASE_URL}/api/history/histories`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    });
+    await postHistory(request);
   };
 
   const handleDelete = async (carNumber, id) => {

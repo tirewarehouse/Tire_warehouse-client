@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, Input, Modal, notification } from "antd";
+import { postAddAdmin } from "../../js/api/admin";
 
 const ModalAdminAdd = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,23 +21,13 @@ const ModalAdminAdd = () => {
   };
   const onSave = async () => {
     const request = { name, phone, password: "1234" };
-    const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-    try {
-      const res = await fetch(`${BASE_URL}/api/admin/add-admin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-      });
-      const data = await res.json();
+    const data = await postAddAdmin(request);
       if (data.success) {
         onClose();
         openNotificationWithIcon("success", data.message, "초기 비밀번호는 1234입니다. 수정 후 사용해주세요.");
       } else {
         openNotificationWithIcon("error", data.message, "문의 바랍니다.");
       }
-    } catch (err) {
-      console.error(err);
-    }
   };
   return (
     <>

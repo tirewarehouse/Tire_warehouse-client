@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Col, Row, Table } from "antd";
 
-const InventoryList = () => {
+const InventoriesView = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [warehouses, setWarehouses] = useState([]);
@@ -130,4 +130,4 @@ const InventoryList = () => {
   );
 };
 
-export default InventoryList;
+export default InventoriesView;

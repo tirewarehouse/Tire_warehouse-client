@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import StockLocationModal from "./StockLocationModal";
-import { useAdmin } from "../context/AdminContext";
+import { useAdmin } from "../../context/AdminContext";
 
 const AdminInModal = ({ onClose }) => {
   const [companies, setCompanies] = useState([]);

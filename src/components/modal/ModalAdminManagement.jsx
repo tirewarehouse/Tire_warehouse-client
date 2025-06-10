@@ -3,6 +3,7 @@ import { Button, Modal, notification, Table } from "antd";
 import { useAdmin } from "../../context/AdminContext";
 import ModalAdminAdd from "./ModalAdminAdd";
 import ModalAdminPasswordModify from "./ModalAdminPasswordModify";
+import { deleteAdmin, getAdmins } from "../../js/api/admin";
 
 const ModalAdminManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,16 +18,14 @@ const ModalAdminManagement = () => {
     });
   };
 
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   useEffect(() => {
     const getMembers = async () => {
       if (!isModalOpen || !login) return;
-      const res = await fetch(`${BASE_URL}/api/admin/get-admins`);
-      const data = await res.json();
+      const data = await getAdmins();
       setMembers(data);
     };
     getMembers();
-  }, [isModalOpen, login, BASE_URL]);
+  }, [isModalOpen, login]);
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -39,10 +38,7 @@ const ModalAdminManagement = () => {
   };
 
   const onDelete = async (name) => {
-    const res = await fetch(`${BASE_URL}/api/admin/delete-admin?name=${name}`, {
-      method: "DELETE",
-    });
-    const data = await res.json();
+    const data = await deleteAdmin({ name });
     if (data.success) {
       setMembers(members.filter((member) => member.name !== name));
       openNotificationWithIcon("success", "삭제 완료", data.message);

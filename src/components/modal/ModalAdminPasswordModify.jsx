@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, Input, Modal, notification } from "antd";
 import { useAdmin } from "../../context/AdminContext";
+import { putUpdateAdmin } from "../../js/api/admin";
 
 const ModalAdminPasswordModify = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,23 +24,13 @@ const ModalAdminPasswordModify = () => {
   };
   const onUpdate = async () => {
     const request = { password: beforePassword, newPassword, name: admin };
-    const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-    try {
-      const res = await fetch(`${BASE_URL}/api/admin/update-admin`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(request),
-      });
-      const data = await res.json();
+    const data = await putUpdateAdmin(request);
       if (data.success) {
         onClose();
         openNotificationWithIcon("success", "변경 완료", data.message);
       } else {
         openNotificationWithIcon("error", "변경 실패", data.message);
       }
-    } catch (err) {
-      console.error(err);
-    }
   };
   return (
     <>

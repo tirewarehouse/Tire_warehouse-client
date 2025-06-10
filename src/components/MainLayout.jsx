@@ -1,14 +1,15 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { SearchOutlined, FileSearchOutlined, PlusOutlined, SyncOutlined, ReconciliationOutlined, HistoryOutlined } from "@ant-design/icons";
 import { Layout, Menu, Spin, theme } from "antd";
 import { useAdmin } from "../context/AdminContext";
-import SearchModal from "./SearchModal";
+import SearchModal from "./modal/SearchModal";
 import InventoriesView from "./inventory/InventoriesView";
-import AdminInModal from "./AdminInModal";
+import AdminInModal from "./modal/AdminInModal";
 import InventoryStatusChangeView from "./inventoryStatusChange/InventoryStatusChangeView";
-import CompanyManagementModal from "./CompanyManagementModal";
+import CompanyManagementModal from "./modal/CompanyManagementModal";
 import HistoriesView from "./history/HistoriesView";
 import ModalStockUp from "./modal/ModalStockUp";
+import dayjs from "dayjs";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -34,7 +35,6 @@ const App = () => {
   const [showInventoryStatusChangeView, setShowInventoryStatusChangeView] = useState(false);
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [showStockUpModal, setShowStockUpModal] = useState(false);
-
 
   const handleModalClose = () => {
     setShowInModal(false);
@@ -76,11 +76,29 @@ const App = () => {
       });
   }, [BASE_URL]);
 
+  useEffect(() => {
+    fetchInventory();
+  }, [BASE_URL, fetchInventory]);
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const clickLayout = () => {
+    const expiration = localStorage.getItem("expiration");
+    if (expiration) {
+      const now = dayjs();
+      if (now.isAfter(dayjs(expiration))) {
+        localStorage.removeItem("admin");
+        localStorage.removeItem("expiration");
+        window.location.reload();
+        alert("로그인 시간이 만료되었습니다. 다시 로그인해주세요.");
+      } else {
+        localStorage.setItem("expiration", dayjs().add(30, "minutes").toDate());
+      }
+    }
+  };
   return (
-    <Layout style={{ height: "100vh", width: "100vw" }}>
+    <Layout style={{ height: "100vh", width: "100vw" }} onClick={clickLayout}>
       <Sider breakpoint="lg" collapsedWidth="0" style={{ backgroundColor: "#bfdbfe" }}>
         <Menu mode="inline" items={filterItems} />
         {showSearchModal && <SearchModal onClose={() => setShowSearchModal(false)} />}

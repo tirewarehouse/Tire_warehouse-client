@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Button, Col, notification, Row, Table } from "antd";
 import dayjs from "dayjs";
 import { useAdmin } from "../../context/AdminContext";
+import { getHistories, putHistory } from "../../js/api/history";
 
 const HistoriesView = () => {
   const [warehouses, setWarehouses] = useState([]);
@@ -11,8 +12,8 @@ const HistoriesView = () => {
   const [api, contextHolder] = notification.useNotification();
   const openNotificationWithIcon = (type, message, description) => {
     api[type]({
-      message: message,
-      description: description,
+      message,
+      description,
     });
   };
 
@@ -59,10 +60,9 @@ const HistoriesView = () => {
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const fetchHistories = useCallback(async () => {
-    const res = await fetch(`${BASE_URL}/api/history/histories`);
-    const data = await res.json();
+    const data = await getHistories();
     setHistories(data);
-  }, [BASE_URL]);
+  }, []);
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -91,12 +91,7 @@ const HistoriesView = () => {
 
   const handleRollback = async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/api/history/histories/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ creator: admin }),
-      });
-      const data = await res.json();
+      const data = await putHistory(id, { creator: admin });
       if (data.success) {
         openNotificationWithIcon("success", data.message, "데이터가 원복 되었습니다.");
         fetchHistories();
