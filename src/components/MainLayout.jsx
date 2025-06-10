@@ -18,10 +18,10 @@ const App = () => {
   const items = [
     { key: 1, icon: <SearchOutlined />, label: "검색", visible_column: "true", onClick: () => setShowSearchModal(true) },
     { key: 2, icon: <FileSearchOutlined />, label: "리스트 확인", visible_column: "true", onClick: () => handleShowInventoriesView() },
-    { key: 3, icon: <SyncOutlined />, label: "재고 상태 변경", visible_column: admin ? "true" : "false", onClick: () => handleShowInventoryStatusChangeView() },
-    { key: 4, icon: <ReconciliationOutlined />, label: "회사 관리", visible_column: admin ? "true" : "false", onClick: () => setShowCompanyModal(true) },
-    { key: 5, icon: <HistoryOutlined />, label: "이력 관리", visible_column: admin ? "true" : "false", onClick: () => handleShowHistoryView(true) },
-    { key: 6, icon: <PlusOutlined />, label: "재고 추가", visible_column: admin ? "true" : "false", onClick: () => setShowStockUpModal(true) },
+    { key: 3, icon: <PlusOutlined />, label: "재고 추가", visible_column: admin ? "true" : "false", onClick: () => setShowStockUpModal(true) },
+    { key: 4, icon: <SyncOutlined />, label: "재고 상태 변경", visible_column: admin ? "true" : "false", onClick: () => handleShowInventoryStatusChangeView() },
+    { key: 5, icon: <ReconciliationOutlined />, label: "회사 관리", visible_column: admin ? "true" : "false", onClick: () => setShowCompanyModal(true) },
+    { key: 6, icon: <HistoryOutlined />, label: "이력 관리", visible_column: admin ? "true" : "false", onClick: () => handleShowHistoryView(true) },
   ];
   const filterItems = items.filter((item) => item.visible_column === "true");
   const [showSearchModal, setShowSearchModal] = useState(false);
