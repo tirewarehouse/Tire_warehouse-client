@@ -31,6 +31,8 @@ const ModalLogin = () => {
       openNotificationWithIcon("success", data.message, "로그인 성공");
       onClose();
       login(data.name);
+      setId("");
+      setPassword("");
     } else {
       openNotificationWithIcon("error", data.message, "로그인 실패");
     }
@@ -45,11 +47,11 @@ const ModalLogin = () => {
     <>
       {contextHolder}
       {admin ? (
-        <Button type="primary" size="large" onClick={logout}>
+        <Button className="ml-2" type="primary" size="large" onClick={logout}>
           {admin} 로그아웃
         </Button>
       ) : (
-        <Button type="primary" size="large" onClick={showModal}>
+        <Button className="ml-2" type="primary" size="large" onClick={showModal}>
           관리자 로그인
         </Button>
       )}

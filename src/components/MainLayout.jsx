@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Layout, Menu, Spin, theme } from "antd";
+import { Layout, Menu, notification, Spin, theme } from "antd";
 import { SearchOutlined, FileSearchOutlined, PlusOutlined, SyncOutlined, ReconciliationOutlined, HistoryOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { getSearchAll } from "../js/api/search";
+import { getSearchWarehouseInventory } from "../js/api/search";
 import { useAdmin } from "../context/AdminContext";
 import SearchModal from "./modal/SearchModal";
 import InventoriesView from "./inventory/InventoriesView";
@@ -13,12 +13,20 @@ import ModalStockUp from "./modal/ModalStockUp";
 
 const { Header, Content, Footer, Sider } = Layout;
 
-const App = () => {
+const App = ({ selectedWarehouse }) => {
   const { admin } = useAdmin();
+  const [api, contextHolder] = notification.useNotification();
+  const openNotificationWithIcon = (type, message, description) => {
+    api[type]({
+      message: message,
+      description: description,
+    });
+  };
+
   const items = [
-    { key: 1, icon: <SearchOutlined />, label: "검색", visible_column: "true", onClick: () => setShowSearchModal(true) },
+    { key: 1, icon: <SearchOutlined />, label: "검색", visible_column: "true", onClick: () => handleShowSearchModal() },
     { key: 2, icon: <FileSearchOutlined />, label: "리스트 확인", visible_column: "true", onClick: () => handleShowInventoriesView() },
-    { key: 3, icon: <PlusOutlined />, label: "재고 추가", visible_column: admin ? "true" : "false", onClick: () => setShowStockUpModal(true) },
+    { key: 3, icon: <PlusOutlined />, label: "재고 추가", visible_column: admin ? "true" : "false", onClick: () => handleShowStockUpModal() },
     { key: 4, icon: <SyncOutlined />, label: "재고 상태 변경", visible_column: admin ? "true" : "false", onClick: () => handleShowInventoryStatusChangeView() },
     { key: 5, icon: <ReconciliationOutlined />, label: "회사 관리", visible_column: admin ? "true" : "false", onClick: () => setShowCompanyModal(true) },
     { key: 6, icon: <HistoryOutlined />, label: "이력 관리", visible_column: admin ? "true" : "false", onClick: () => handleShowHistoryView(true) },
@@ -33,19 +41,40 @@ const App = () => {
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [showStockUpModal, setShowStockUpModal] = useState(false);
 
+  const checkWarehouse = () => {
+    if (!selectedWarehouse) {
+      openNotificationWithIcon("warning", "창고를 선택해주세요.", "창고를 선택 후 진행가능합니다.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleShowStockUpModal = () => {
+    if (!checkWarehouse()) return;
+    setShowStockUpModal(true);
+  };
+
+  const handleShowSearchModal = () => {
+    if (!checkWarehouse()) return;
+    setShowSearchModal(true);
+  };
+
   const handleShowInventoriesView = () => {
+    if (!checkWarehouse()) return;
     setShowInventoriesView(true);
     setShowInventoryStatusChangeView(false);
     setShowHistoryView(false);
   };
 
   const handleShowInventoryStatusChangeView = () => {
+    if (!checkWarehouse()) return;
     setShowInventoryStatusChangeView(true);
     setShowInventoriesView(false);
     setShowHistoryView(false);
   };
 
   const handleShowHistoryView = () => {
+    if (!checkWarehouse()) return;
     setShowHistoryView(true);
     setShowInventoriesView(false);
     setShowInventoryStatusChangeView(false);
@@ -53,11 +82,11 @@ const App = () => {
 
   const fetchInventory = useCallback(() => {
     setLoading(true);
-    getSearchAll().then((data) => {
+    getSearchWarehouseInventory(selectedWarehouse).then((data) => {
       setInventory(data);
       setLoading(false);
     });
-  }, []);
+  }, [selectedWarehouse]);
 
   useEffect(() => {
     fetchInventory();
@@ -82,11 +111,20 @@ const App = () => {
   };
   return (
     <Layout style={{ height: "100vh", width: "100vw" }} onClick={clickLayout}>
+      {contextHolder}
       <Sider breakpoint="lg" collapsedWidth="0" style={{ backgroundColor: "#bfdbfe" }}>
         <Menu mode="inline" items={filterItems} />
         {showSearchModal && <SearchModal onClose={() => setShowSearchModal(false)} />}
         {showCompanyModal && <CompanyManagementModal onClose={() => setShowCompanyModal(false)} />}
-        {showStockUpModal && <ModalStockUp open={showStockUpModal} onCancel={() => setShowStockUpModal(false)} />}
+        {showStockUpModal && (
+          <ModalStockUp
+            open={showStockUpModal}
+            onCancel={() => {
+              setShowStockUpModal(false);
+              fetchInventory();
+            }}
+          />
+        )}
         <div className="bg-white p-2 rounded shadow text-sm">
           <div className="font-bold mb-1">재고 현황</div>
 
@@ -124,8 +162,8 @@ const App = () => {
             }}
           >
             {!showInventoriesView && !showInventoryStatusChangeView && !showHistoryView && "왼쪽 버튼을 눌러 재고 리스트나 상태 변경을 확인하세요."}
-            {showInventoriesView && <InventoriesView />}
-            {showInventoryStatusChangeView && <InventoryStatusChangeView onInventoryUpdate={fetchInventory} />}
+            {showInventoriesView && <InventoriesView selectedWarehouse={selectedWarehouse} />}
+            {showInventoryStatusChangeView && <InventoryStatusChangeView onInventoryUpdate={fetchInventory} selectedWarehouse={selectedWarehouse} />}
             {showHistoryView && <HistoriesView />}
           </div>
         </Content>

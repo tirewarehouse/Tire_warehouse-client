@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { getSearch } from "../../js/api/search";
+import { getCompanies, getTypes } from "../../js/api/options";
 
 const SearchModal = ({ onClose }) => {
   const [input, setInput] = useState("");
   const [results, setResults] = useState([]);
   const [error, setError] = useState("");
-
+  const [typeOptions, setTypeOptions] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const selectedWarehouse = localStorage.getItem("selectedWarehouse");
   // ✅ ESC 키로 닫기 기능 추가
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -32,10 +35,26 @@ const SearchModal = ({ onClose }) => {
     }
 
     try {
-      getSearch(cleaned).then((data) => setResults(data));
+      getSearch(cleaned, selectedWarehouse).then((data) => setResults(data));
     } catch (error) {
       console.error("검색 오류:", error);
     }
+  };
+
+  useEffect(() => {
+    getTypes().then((data) => setTypeOptions(data));
+    getCompanies().then((data) => setCompanies(data));
+  }, []);
+
+  const convertCompanyName = (id) => {
+    const company = companies.find((item) => item._id === id);
+    const companyName = companies.find((item) => item.name === id);
+    return company ? company.name : companyName ? companyName.name : id;
+  };
+
+  const convertTypeName = (id) => {
+    const type = typeOptions.find((item) => item._id === id);
+    return type ? type.name : id;
   };
 
   return (
@@ -61,13 +80,13 @@ const SearchModal = ({ onClose }) => {
             {results.map((item) => (
               <div key={item._id} className="border rounded p-4 shadow bg-white">
                 <p>
-                  <strong>회사:</strong> {item.company}
+                  <strong>회사:</strong> {convertCompanyName(item.company)}
                 </p>
                 <p>
                   <strong>차량번호:</strong> {item.carNumber}
                 </p>
                 <p>
-                  <strong>타입:</strong> {item.type}
+                  <strong>타입:</strong> {convertTypeName(item.type)}
                 </p>
                 <p>
                   <strong>수량:</strong> {item.quantity}

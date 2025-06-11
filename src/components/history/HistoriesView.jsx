@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Button, Col, notification, Row, Table } from "antd";
 import dayjs from "dayjs";
 import { useAdmin } from "../../context/AdminContext";
-import { getHistories, putHistory } from "../../js/api/history";
+import { deleteHistory, getHistories, putHistory } from "../../js/api/history";
 
 const HistoriesView = () => {
   const [warehouses, setWarehouses] = useState([]);
@@ -49,9 +49,14 @@ const HistoriesView = () => {
       key: "rollback",
       align: "center",
       render: (_, record) => (
-        <Button size="small" color="orange" variant="solid" onClick={() => handleRollback(record._id)}>
-          원복
-        </Button>
+        <span>
+          <Button size="small" color="orange" variant="solid" onClick={() => handleRollback(record._id)}>
+            원복
+          </Button>
+          <Button size="small" color="red" variant="solid" onClick={() => handleDelete(record._id)}>
+            삭제
+          </Button>
+        </span>
       ),
       width: "7.6%",
     },
@@ -99,7 +104,18 @@ const HistoriesView = () => {
         openNotificationWithIcon("error", data.message, "문의 바랍니다.");
       }
     } catch (err) {
-      console.error(err);
+      openNotificationWithIcon("error", err.message, "문의 바랍니다.");
+    }
+  };
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("정말 삭제하시겠습니까?");
+    if (!confirmed) return;
+    const data = await deleteHistory(id);
+    if (data.success) {
+      openNotificationWithIcon("success", data.message, "데이터가 삭제 되었습니다.");
+      fetchHistories();
+    } else {
+      openNotificationWithIcon("error", data.message, "문의 바랍니다.");
     }
   };
   return (

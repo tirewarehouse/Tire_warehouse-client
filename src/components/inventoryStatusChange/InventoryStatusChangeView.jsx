@@ -7,15 +7,15 @@ import "dayjs/locale/ko"; // 한국어 가져오기
 import locale from "antd/es/date-picker/locale/ko_KR";
 import { useAdmin } from "../../context/AdminContext";
 import { postHistory } from "../../js/api/history";
-import { getSearchAll } from "../../js/api/search";
+import { getSearchWarehouseInventory } from "../../js/api/search";
 import { getCompanies, getTypes } from "../../js/api/options";
 import { getWarehouses } from "../../js/api/warehouse";
-import { getInventoryDetails } from "../../js/api/inventory";
+import { deleteStock, getInventoryDetails, putUpdateStock } from "../../js/api/inventory";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ko");
 
-const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
+const InventoryStatusChangeView = ({ onInventoryUpdate, selectedWarehouse }) => {
   const [editedData, setEditedData] = useState([]);
   const [typeOptions, setTypeOptions] = useState([]);
   const [warehouseOptions, setWarehouseOptions] = useState([]);
@@ -136,7 +136,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   const BASE_URL = process.env.REACT_APP_API_BASE_URL; // ✅ 추가
 
   useEffect(() => {
-    getSearchAll().then((data) => {
+    getSearchWarehouseInventory(selectedWarehouse).then((data) => {
       setEditedData(
         data.map((item) => ({
           _id: item._id,
@@ -157,7 +157,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     getWarehouses().then((data) => setWarehouseOptions(data));
 
     getCompanies().then((data) => setCompanies(data));
-  }, [BASE_URL]);
+  }, [BASE_URL, selectedWarehouse]);
 
   const handleChange = (id, field, value) => {
     const newData = [...editedData];
@@ -241,9 +241,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
       return;
     }
     const { carNumber, dateIn, dateOut, quantity, type, memo, locations } = editedData.find((item) => item._id === id);
-    const originData = await fetch(`${BASE_URL}/api/admin/get-detail?id=${id}`)
-      .then((res) => res.json())
-      .then((res) => res);
+    const originData = await getInventoryDetails({ id });
     if (locations.some((loc) => !loc.x || !loc.y || !loc.z)) return;
     try {
       for (const loc of locations) {
@@ -257,15 +255,9 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
         }
       }
       try {
-        const res = await fetch(`${BASE_URL}/api/admin/update-stock`, {
-          // ✅ 수정
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ carNumber, dateIn, dateOut, quantity, type, memo, locations }),
-        });
+        const res = await putUpdateStock({ carNumber, dateIn, dateOut, quantity, type, memo, locations });
 
-        const result = await res.json();
-        alert(result.message);
+        alert(res.message);
         onSaveHistory(id, "UPDATE");
         if (onInventoryUpdate) onInventoryUpdate();
       } catch (err) {
@@ -277,9 +269,7 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
   };
 
   const onSaveHistory = async (id, historyType) => {
-    const originData = await fetch(`${BASE_URL}/api/admin/get-detail?id=${id}`)
-      .then((res) => res.json())
-      .then((res) => res);
+    const originData = await getInventoryDetails({ id });
     const request = {
       carNumber: originData.carNumber,
       dateIn: originData.dateIn,
@@ -301,13 +291,9 @@ const InventoryStatusChangeView = ({ onInventoryUpdate }) => {
     if (!confirmed) return;
     try {
       onSaveHistory(id, "DELETE");
-      const res = await fetch(`${BASE_URL}/api/admin/delete-stock?carNumber=${carNumber}`, {
-        // ✅ 수정
-        method: "DELETE",
-      });
+      const res = await deleteStock({ carNumber });
 
-      const result = await res.json();
-      alert(result.message);
+      alert(res.message);
 
       setEditedData((prev) => prev.filter((item) => item.carNumber !== carNumber));
       if (onInventoryUpdate) onInventoryUpdate();

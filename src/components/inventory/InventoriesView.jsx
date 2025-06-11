@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Col, Row, Table } from "antd";
-import { getSearchAll } from "../../js/api/search";
+import { getSearchWarehouseInventory } from "../../js/api/search";
 import { getCompanies, getTypes } from "../../js/api/options";
-import { getWarehouses } from "../../js/api/warehouse";
 
-const InventoriesView = () => {
+const InventoriesView = ({ selectedWarehouse }) => {
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
-  const [warehouses, setWarehouses] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [typeOptions, setTypeOptions] = useState([]);
 
@@ -34,15 +32,6 @@ const InventoriesView = () => {
       onFilter: (value, record) => record.type === value,
     },
     {
-      title: "창고",
-      dataIndex: "warehouse",
-      key: "warehouse",
-      align: "center",
-      render: (text) => convertWarehouseName(text),
-      filters: warehouses.map((warehouse) => ({ text: warehouse.name, value: warehouse._id })),
-      onFilter: (value, record) => record.warehouse === value,
-    },
-    {
       title: "위치",
       dataIndex: "locations",
       key: "locations",
@@ -61,7 +50,7 @@ const InventoriesView = () => {
   ];
 
   useEffect(() => {
-    getSearchAll()
+    getSearchWarehouseInventory(selectedWarehouse)
       .then((data) => setData(data))
       .catch((err) => {
         console.error("데이터 불러오기 실패:", err);
@@ -75,14 +64,7 @@ const InventoriesView = () => {
     getTypes()
       .then((data) => setTypeOptions(data))
       .catch((err) => console.error("❌ 타입 옵션 불러오기 실패:", err));
-    getWarehouses()
-      .then((data) => setWarehouses(data))
-      .catch((err) => console.error("❌ 창고 옵션 불러오기 실패:", err));
-  }, []);
-
-  const convertWarehouseName = (id) => {
-    return warehouses.find((w) => w._id === id)?.name;
-  };
+  }, [selectedWarehouse]);
 
   const convertCompanyName = (id) => {
     const company = companies.find((item) => item._id === id);

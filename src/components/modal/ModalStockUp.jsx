@@ -29,6 +29,12 @@ const ModalStockUp = ({ open, onCancel }) => {
     });
   };
 
+  const selectedWarehouse = localStorage.getItem("selectedWarehouse");
+  const handleConvertWarehouse = () => {
+    const warehouse = warehouses.find((warehouse) => warehouse._id === selectedWarehouse);
+    return warehouse ? warehouse.name : "";
+  };
+
   const columns = [
     {
       title: "회사",
@@ -70,30 +76,24 @@ const ModalStockUp = ({ open, onCancel }) => {
       dataIndex: "warehouse",
       align: "center",
       width: "11%",
-      render: (text, record, index) => (
-        <Select value={record.warehouse} style={{ width: "100%" }} onChange={(value) => handleChangeWarehouse(value, index)}>
-          {warehouses.map((warehouse) => (
-            <Select.Option value={warehouse._id}>{warehouse.name}</Select.Option>
-          ))}
-        </Select>
-      ),
+      render: () => <span>{handleConvertWarehouse()}</span>,
     },
     {
       title: "위치",
       dataIndex: "locations",
       align: "center",
       width: "19%",
-      render: (_, record) =>
+      render: (_, record, index) =>
         _?.map((loc, i) => (
           <Row key={`${loc.x}-${loc.y}-${loc.z}-${i}`}>
             <Col span={8}>
-              <InputNumber addonBefore="X" value={loc.x} min={1} max={100} style={{ width: "90px" }} onChange={(value) => handleChangeLocation(value, loc._id, record, "x")} />
+              <InputNumber addonBefore="X" value={loc.x} min={1} max={100} style={{ width: "90px" }} onChange={(value) => handleChangeLocation(value, i, index, "x")} />
             </Col>
             <Col span={8}>
-              <InputNumber addonBefore="Y" value={loc.y} min={1} max={100} style={{ width: "90px" }} onChange={(value) => handleChangeLocation(value, loc._id, record, "y")} />
+              <InputNumber addonBefore="Y" value={loc.y} min={1} max={100} style={{ width: "90px" }} onChange={(value) => handleChangeLocation(value, i, index, "y")} />
             </Col>
             <Col span={8}>
-              <InputNumber addonBefore="Z" value={loc.z} min={1} max={100} style={{ width: "90px" }} onChange={(value) => handleChangeLocation(value, loc._id, record, "z")} />
+              <InputNumber addonBefore="Z" value={loc.z} min={1} max={100} style={{ width: "90px" }} onChange={(value) => handleChangeLocation(value, i, index, "z")} />
             </Col>
           </Row>
         )),
@@ -134,16 +134,10 @@ const ModalStockUp = ({ open, onCancel }) => {
     setInventory(newInventory);
   };
 
-  const handleChangeWarehouse = (value, index) => {
+  const handleChangeLocation = (value, locIndex, recordIndex, field) => {
     const newInventory = [...inventory];
-    newInventory[index].warehouse = value;
-    setInventory(newInventory);
-  };
-
-  const handleChangeLocation = (value, id, record, field) => {
-    const newInventory = [...inventory];
-    const itemToEdit = newInventory.find((item) => item._id === record._id);
-    const locationToEdit = itemToEdit.locations.find((loc) => loc._id === id);
+    const itemToEdit = newInventory[recordIndex];
+    const locationToEdit = itemToEdit.locations[locIndex];
     locationToEdit[field] = value;
     setInventory(newInventory);
   };
@@ -193,8 +187,12 @@ const ModalStockUp = ({ open, onCancel }) => {
 
   const handleSubmit = () => {
     handleCheckLocation();
-    inventory.forEach((item) => postInventoryIn(item));
+    inventory.forEach((item) => {
+      item.warehouse = selectedWarehouse;
+      postInventoryIn(item);
+    });
     openNotificationWithIcon("success", "재고 추가 성공", "재고가 추가되었습니다.");
+    setInventory([]);
   };
 
   const handleCheckLocation = async () => {
